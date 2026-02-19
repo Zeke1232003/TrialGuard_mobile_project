@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Badge } from '../ui';
 
 interface SubscriptionCardProps {
@@ -13,6 +14,9 @@ interface SubscriptionCardProps {
   isTrial: boolean;
   daysUntil: number;
   onPress: () => void;
+  iconLibrary?: 'Ionicons' | 'MaterialCommunityIcons';
+  iconName?: string;
+  iconColor?: string;
 }
 
 export function SubscriptionCard({
@@ -25,6 +29,9 @@ export function SubscriptionCard({
   isTrial,
   daysUntil,
   onPress,
+  iconLibrary,
+  iconName,
+  iconColor,
 }: SubscriptionCardProps) {
   const currencySymbol = currency === 'THB' ? '฿' : '$';
   
@@ -32,12 +39,28 @@ export function SubscriptionCard({
   const date = new Date(nextBillDate);
   const formattedDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
+  // Render icon based on library
+  const renderIcon = () => {
+    if (!iconName) return null;
+    
+    const IconComponent = iconLibrary === 'MaterialCommunityIcons' ? MaterialCommunityIcons : Ionicons;
+    
+    return (
+      <View className="w-12 h-12 bg-gray-100 rounded-full items-center justify-center mr-3">
+        <IconComponent name={iconName as any} size={28} color={iconColor || '#4FD1C5'} />
+      </View>
+    );
+  };
+
   return (
     <TouchableOpacity
       onPress={onPress}
       className="bg-white rounded-xl shadow-sm p-4 flex-row items-center justify-between active:opacity-70"
       activeOpacity={0.7}
     >
+      {/* Icon */}
+      {renderIcon()}
+
       <View className="flex-1">
         <View className="flex-row items-center mb-1">
           <Text className="text-base font-semibold text-gray-900 mr-2">

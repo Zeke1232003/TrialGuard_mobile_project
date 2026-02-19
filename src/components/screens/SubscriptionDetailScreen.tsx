@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, ScrollView, Alert } from 'react-native';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Button, Badge, Card } from '../ui';
 import { mockSubscriptions } from '../../data/mockData';
 
@@ -59,11 +60,33 @@ export function SubscriptionDetailScreen({ navigation, route }: any) {
     );
   };
 
+  // Render icon based on library
+  const renderIcon = () => {
+    if (!subscription.iconName) return null;
+    
+    const IconComponent = subscription.iconLibrary === 'MaterialCommunityIcons' 
+      ? MaterialCommunityIcons 
+      : Ionicons;
+    
+    return (
+      <View className="w-20 h-20 bg-gray-100 rounded-full items-center justify-center mb-4">
+        <IconComponent 
+          name={subscription.iconName as any} 
+          size={40} 
+          color={subscription.iconColor || '#4FD1C5'} 
+        />
+      </View>
+    );
+  };
+
   return (
     <ScrollView className="flex-1 bg-gray-50">
       <View className="p-4 pb-24">
         {/* Header Card */}
         <Card className="mb-6">
+          {/* Icon */}
+          {renderIcon()}
+
           <View className="flex-row items-start justify-between mb-4">
             <View className="flex-1">
               <Text className="text-2xl font-bold text-gray-900 mb-2">

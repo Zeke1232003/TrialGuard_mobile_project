@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Card } from '../ui';
 import { mockSubscriptions } from '../../data/mockData';
 
@@ -109,7 +110,7 @@ export function CalendarScreen({ navigation }: any) {
     if (bills.length === 0) {
       return (
         <Card className="items-center py-8">
-          <Text className="text-4xl mb-2">📅</Text>
+          <Ionicons name="calendar" size={48} color="#9CA3AF" style={{ marginBottom: 8 }} />
           <Text className="text-gray-600">No bills this month</Text>
         </Card>
       );

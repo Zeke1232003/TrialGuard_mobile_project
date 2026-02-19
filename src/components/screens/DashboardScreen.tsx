@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { View, Text, ScrollView } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { StatCard } from '../atoms';
 import { SubscriptionCard, TrialAlertCard } from '../molecules';
 import { Button } from '../ui';
@@ -63,25 +64,29 @@ export function DashboardScreen({ navigation }: any) {
         {/* Stats Grid */}
         <View className="flex-row gap-4 mb-6">
           <StatCard
-            title="Monthly Cost"
+            title="Total Monthly Spend"
             value={`${currencySymbol}${totalMonthlyCost.toFixed(0)}`}
-            subtitle={`${activeSubscriptions.length} active`}
-            icon={<Text className="text-gray-400">💰</Text>}
+            subtitle=""
+            icon={<Ionicons name="wallet" size={18} color="#6B7280" />}
+            variant="gradient"
           />
           <StatCard
-            title="Upcoming"
+            title="Upcoming Bills"
             value={upcomingBills.length}
-            subtitle="Next 30 days"
-            icon={<Text className="text-gray-400">📅</Text>}
+            subtitle=""
+            icon={<Ionicons name="calendar" size={18} color="#6B7280" />}
           />
         </View>
 
         {/* Trial Alerts */}
         {trialsEnding.length > 0 && (
           <View className="mb-6">
-            <Text className="text-lg font-semibold text-gray-900 mb-3">
-              ⚠️ Trials Ending Soon
-            </Text>
+            <View className="flex-row items-center mb-3">
+              <Ionicons name="warning" size={20} color="#EA580C" style={{ marginRight: 6 }} />
+              <Text className="text-lg font-semibold text-gray-900">
+                Trials Ending Soon
+              </Text>
+            </View>
             {trialsEnding.map((sub) => (
               <View key={sub.id} className="mb-3">
                 <TrialAlertCard
@@ -102,7 +107,7 @@ export function DashboardScreen({ navigation }: any) {
 
           {activeSubscriptions.length === 0 ? (
             <View className="bg-white rounded-2xl p-8 items-center">
-              <Text className="text-4xl mb-3">📈</Text>
+              <Ionicons name="trending-up" size={48} color="#9CA3AF" style={{ marginBottom: 12 }} />
               <Text className="text-gray-600 mb-4">No subscriptions yet</Text>
               <Button onPress={() => navigation.navigate('AddSubscription')}>
                 Add Your First

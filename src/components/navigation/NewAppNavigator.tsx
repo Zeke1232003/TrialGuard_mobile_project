@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { View, TouchableOpacity, Text } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import {
   LoginScreen,
   RegisterScreen,
@@ -14,34 +15,56 @@ import {
 
 const Stack = createNativeStackNavigator();
 
-// Simple bottom tab bar component
-function BottomTabBar({ navigation, state }: any) {
+// Simple bottom tab bar component with floating add button
+function BottomTabBar({ navigation }: any) {
+  const [activeTab, setActiveTab] = useState('Dashboard');
+  
   const tabs = [
-    { name: 'Dashboard', icon: '🏠', route: 'Dashboard' },
-    { name: 'Add', icon: '➕', route: 'AddSubscription' },
-    { name: 'Calendar', icon: '📅', route: 'Calendar' },
-    { name: 'Settings', icon: '⚙️', route: 'Settings' },
+    { name: 'Dashboard', icon: 'home', route: 'Dashboard' },
+    { name: 'Calendar', icon: 'calendar', route: 'Calendar' },
+    { name: 'Settings', icon: 'settings', route: 'Settings' },
   ];
 
+  const handleTabPress = (route: string) => {
+    setActiveTab(route);
+    navigation.navigate(route);
+  };
+
   return (
-    <View className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex-row">
-      {tabs.map((tab, index) => {
-        const isFocused = state.routes[state.index].name === tab.route;
-        
-        return (
-          <TouchableOpacity
-            key={tab.name}
-            onPress={() => navigation.navigate(tab.route)}
-            className="flex-1 items-center py-3"
-          >
-            <Text className="text-2xl mb-1">{tab.icon}</Text>
-            <Text className={`text-xs ${isFocused ? 'text-[#4FD1C5] font-semibold' : 'text-gray-600'}`}>
-              {tab.name}
-            </Text>
-          </TouchableOpacity>
-        );
-      })}
-    </View>
+    <>
+      {/* Floating Add Button */}
+      <TouchableOpacity
+        onPress={() => navigation.navigate('AddSubscription')}
+        className="absolute bottom-20 right-6 w-14 h-14 bg-[#4FD1C5] rounded-full items-center justify-center shadow-lg"
+        style={{ elevation: 8 }}
+      >
+        <Ionicons name="add" size={32} color="white" />
+      </TouchableOpacity>
+
+      {/* Bottom Tab Bar */}
+      <View className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex-row shadow-lg">
+        {tabs.map((tab) => {
+          const isFocused = activeTab === tab.route;
+          
+          return (
+            <TouchableOpacity
+              key={tab.name}
+              onPress={() => handleTabPress(tab.route)}
+              className="flex-1 items-center py-3"
+            >
+              <Ionicons 
+                name={tab.icon as any} 
+                size={24} 
+                color={isFocused ? '#4FD1C5' : '#9CA3AF'} 
+              />
+              <Text className={`text-xs mt-1 ${isFocused ? 'text-[#4FD1C5] font-semibold' : 'text-gray-600'}`}>
+                {tab.name}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    </>
   );
 }
 

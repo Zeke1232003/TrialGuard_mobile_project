@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Button } from '../ui';
 
 interface TrialAlertCardProps {
@@ -12,7 +13,7 @@ export function TrialAlertCard({ serviceName, daysRemaining, onView }: TrialAler
   return (
     <View className="flex-row items-center justify-between p-4 bg-orange-50 rounded-xl border border-orange-200">
       <View className="flex-row items-start flex-1 mr-3">
-        <Text className="text-orange-600 text-xl mr-3">⚠️</Text>
+        <Ionicons name="warning" size={24} color="#EA580C" style={{ marginRight: 12 }} />
         <View className="flex-1">
           <Text className="font-medium text-orange-900">{serviceName}</Text>
           <Text className="text-sm text-orange-700">

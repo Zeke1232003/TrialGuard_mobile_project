@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, TextInput, Alert, Switch, TouchableOpacity } from 'react-native';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Button, Input, Card } from '../ui';
 
 export function AddSubscriptionScreen({ navigation }: any) {
@@ -17,6 +18,26 @@ export function AddSubscriptionScreen({ navigation }: any) {
   const [isTrial, setIsTrial] = useState(false);
   const [trialEndDate, setTrialEndDate] = useState('');
   const [notes, setNotes] = useState('');
+  const [selectedIcon, setSelectedIcon] = useState<{
+    library: 'Ionicons' | 'MaterialCommunityIcons';
+    name: string;
+    color: string;
+  } | null>(null);
+  const [showIconPicker, setShowIconPicker] = useState(false);
+
+  // Predefined icon options
+  const iconOptions = [
+    { library: 'Ionicons' as const, name: 'logo-netflix', color: '#E50914', label: 'Netflix' },
+    { library: 'MaterialCommunityIcons' as const, name: 'spotify', color: '#1DB954', label: 'Spotify' },
+    { library: 'MaterialCommunityIcons' as const, name: 'castle', color: '#113CCF', label: 'Disney+' },
+    { library: 'Ionicons' as const, name: 'logo-youtube', color: '#FF0000', label: 'YouTube' },
+    { library: 'MaterialCommunityIcons' as const, name: 'adobe', color: '#FF0000', label: 'Adobe' },
+    { library: 'MaterialCommunityIcons' as const, name: 'file-document', color: '#000000', label: 'Notion' },
+    { library: 'Ionicons' as const, name: 'musical-notes', color: '#FF6B6B', label: 'Music' },
+    { library: 'Ionicons' as const, name: 'game-controller', color: '#4ECDC4', label: 'Gaming' },
+    { library: 'Ionicons' as const, name: 'fitness', color: '#FF6348', label: 'Fitness' },
+    { library: 'MaterialCommunityIcons' as const, name: 'cloud', color: '#4A90E2', label: 'Cloud' },
+  ];
 
   const handleParse = () => {
     if (!pastedText.trim()) {
@@ -27,11 +48,24 @@ export function AddSubscriptionScreen({ navigation }: any) {
     // Simple parsing logic (mock)
     const text = pastedText.toLowerCase();
     
-    // Try to extract service name
-    if (text.includes('netflix')) setServiceName('Netflix');
-    else if (text.includes('spotify')) setServiceName('Spotify');
-    else if (text.includes('disney')) setServiceName('Disney+');
-    else setServiceName('Unknown Service');
+    // Try to extract service name and set icon
+    if (text.includes('netflix')) {
+      setServiceName('Netflix');
+      setSelectedIcon(iconOptions[0]);
+    } else if (text.includes('spotify')) {
+      setServiceName('Spotify');
+      setSelectedIcon(iconOptions[1]);
+    } else if (text.includes('disney')) {
+      setServiceName('Disney+');
+      setSelectedIcon(iconOptions[2]);
+    } else if (text.includes('youtube')) {
+      setServiceName('YouTube Premium');
+      setSelectedIcon(iconOptions[3]);
+    } else if (text.includes('amazon')) {
+      setServiceName('Amazon Prime');
+    } else {
+      setServiceName('Unknown Service');
+    }
 
     // Try to extract amount
     const amountMatch = text.match(/\d+/);
@@ -39,8 +73,42 @@ export function AddSubscriptionScreen({ navigation }: any) {
       setMonthlyCost(amountMatch[0]);
     }
 
-    // Detect trial
+    // Try to extract date (e.g., "3 jun", "june 3", "3 june 2026")
+    const datePatterns = [
+      /(\d{1,2})\s*(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i,
+      /(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s*(\d{1,2})/i,
+      /(\d{4})-(\d{2})-(\d{2})/,
+    ];
+
+    const monthMap: { [key: string]: string } = {
+      jan: '01', feb: '02', mar: '03', apr: '04', may: '05', jun: '06',
+      jul: '07', aug: '08', sep: '09', oct: '10', nov: '11', dec: '12',
+    };
+
+    for (const pattern of datePatterns) {
+      const match = text.match(pattern);
+      if (match) {
+        if (match[0].includes('-')) {
+          // Already in YYYY-MM-DD format
+          setNextBillDate(match[0]);
+        } else {
+          // Convert "3 jun" or "jun 3" to date
+          const day = match[1].match(/\d+/) ? match[1] : match[2];
+          const monthText = match[1].match(/[a-z]+/i) ? match[1] : match[2];
+          const month = monthMap[monthText.substring(0, 3).toLowerCase()];
+          const year = '2026'; // default to current year
+          const formattedDay = day.padStart(2, '0');
+          setNextBillDate(`${year}-${month}-${formattedDay}`);
+        }
+        break;
+      }
+    }
+
+    // Detect keywords for trial or expiry
     if (text.includes('trial') || text.includes('free')) {
+      setIsTrial(true);
+    }
+    if (text.includes('expire') || text.includes('expiry') || text.includes('end')) {
       setIsTrial(true);
     }
 
@@ -125,6 +193,9 @@ export function AddSubscriptionScreen({ navigation }: any) {
                 <Text className="font-semibold text-gray-900 mb-2">✓ Detected:</Text>
                 <Text className="text-sm text-gray-700">Service: {serviceName}</Text>
                 <Text className="text-sm text-gray-700">Amount: {currency} {monthlyCost}</Text>
+                {nextBillDate && (
+                  <Text className="text-sm text-gray-700">Next Bill Date: {nextBillDate}</Text>
+                )}
                 {isTrial && <Text className="text-sm text-orange-600">Trial detected!</Text>}
               </Card>
             )}
@@ -152,6 +223,63 @@ export function AddSubscriptionScreen({ navigation }: any) {
                 value={category}
                 onChangeText={setCategory}
               />
+
+              {/* Icon Selector */}
+              <View>
+                <Text className="text-sm font-medium text-gray-700 mb-2">Icon</Text>
+                <TouchableOpacity
+                  onPress={() => setShowIconPicker(!showIconPicker)}
+                  className="flex-row items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-xl"
+                >
+                  {selectedIcon ? (
+                    <View className="flex-row items-center">
+                      <View className="w-10 h-10 bg-white rounded-full items-center justify-center mr-3">
+                        {selectedIcon.library === 'MaterialCommunityIcons' ? (
+                          <MaterialCommunityIcons name={selectedIcon.name as any} size={24} color={selectedIcon.color} />
+                        ) : (
+                          <Ionicons name={selectedIcon.name as any} size={24} color={selectedIcon.color} />
+                        )}
+                      </View>
+                      <Text className="text-gray-900">Selected Icon</Text>
+                    </View>
+                  ) : (
+                    <Text className="text-gray-400">Choose an icon</Text>
+                  )}
+                  <Text className="text-gray-400">{showIconPicker ? '▲' : '▼'}</Text>
+                </TouchableOpacity>
+
+                {/* Icon Grid */}
+                {showIconPicker && (
+                  <View className="flex-row flex-wrap gap-2 mt-3 p-3 bg-gray-50 rounded-xl">
+                    {iconOptions.map((icon, index) => {
+                      const IconComponent = icon.library === 'MaterialCommunityIcons' 
+                        ? MaterialCommunityIcons 
+                        : Ionicons;
+                      const isSelected = selectedIcon?.name === icon.name;
+                      
+                      return (
+                        <TouchableOpacity
+                          key={index}
+                          onPress={() => {
+                            setSelectedIcon(icon);
+                            setShowIconPicker(false);
+                          }}
+                          className={`w-14 h-14 rounded-full items-center justify-center ${
+                            isSelected ? 'bg-[#4FD1C5]' : 'bg-white'
+                          }`}
+                          style={{ borderWidth: 1, borderColor: isSelected ? '#4FD1C5' : '#E5E7EB' }}
+                        >
+                          <IconComponent 
+                            name={icon.name as any} 
+                            size={28} 
+                            color={isSelected ? 'white' : icon.color} 
+                          />
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                )}
+              </View>
 
               <Input
                 label="Monthly Cost *"

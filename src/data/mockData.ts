@@ -10,6 +10,9 @@ export interface Subscription {
   trialEndDate?: string;
   status: 'active' | 'cancelled';
   notes?: string;
+  iconLibrary?: 'Ionicons' | 'MaterialCommunityIcons';
+  iconName?: string;
+  iconColor?: string;
 }
 
 export interface User {
@@ -42,10 +45,13 @@ export const mockSubscriptions: Subscription[] = [
     monthlyCost: 419,
     currency: 'THB',
     billingCycle: 'monthly',
-    nextBillDate: '2026-03-15',
+    nextBillDate: '2026-02-28',
     isTrial: false,
     status: 'active',
     notes: 'Premium plan - 4 screens',
+    iconLibrary: 'Ionicons',
+    iconName: 'logo-netflix',
+    iconColor: '#E50914',
   },
   {
     id: '2',
@@ -54,10 +60,13 @@ export const mockSubscriptions: Subscription[] = [
     monthlyCost: 129,
     currency: 'THB',
     billingCycle: 'monthly',
-    nextBillDate: '2026-03-01',
+    nextBillDate: '2026-02-20',
     isTrial: false,
     status: 'active',
     notes: 'Student discount',
+    iconLibrary: 'MaterialCommunityIcons',
+    iconName: 'spotify',
+    iconColor: '#1DB954',
   },
   {
     id: '3',
@@ -71,6 +80,9 @@ export const mockSubscriptions: Subscription[] = [
     trialEndDate: '2026-02-25',
     status: 'active',
     notes: 'Free trial ending soon!',
+    iconLibrary: 'MaterialCommunityIcons',
+    iconName: 'castle',
+    iconColor: '#113CCF',
   },
   {
     id: '4',
@@ -79,10 +91,13 @@ export const mockSubscriptions: Subscription[] = [
     monthlyCost: 1180,
     currency: 'THB',
     billingCycle: 'monthly',
-    nextBillDate: '2026-03-10',
+    nextBillDate: '2026-02-28',
     isTrial: false,
     status: 'active',
     notes: 'Student license',
+    iconLibrary: 'MaterialCommunityIcons',
+    iconName: 'adobe',
+    iconColor: '#FF0000',
   },
   {
     id: '5',
@@ -91,9 +106,12 @@ export const mockSubscriptions: Subscription[] = [
     monthlyCost: 149,
     currency: 'THB',
     billingCycle: 'monthly',
-    nextBillDate: '2026-03-05',
+    nextBillDate: '2026-02-21',
     isTrial: false,
     status: 'active',
+    iconLibrary: 'Ionicons',
+    iconName: 'logo-youtube',
+    iconColor: '#FF0000',
   },
   {
     id: '6',
@@ -102,10 +120,13 @@ export const mockSubscriptions: Subscription[] = [
     monthlyCost: 0,
     currency: 'THB',
     billingCycle: 'monthly',
-    nextBillDate: '2026-02-23',
+    nextBillDate: '2026-02-22',
     isTrial: true,
-    trialEndDate: '2026-02-23',
+    trialEndDate: '2026-02-22',
     status: 'active',
     notes: 'Free for students',
+    iconLibrary: 'MaterialCommunityIcons',
+    iconName: 'file-document',
+    iconColor: '#000000',
   },
 ];
