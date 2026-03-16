@@ -27,11 +27,11 @@ export function AddSubscriptionScreen({ navigation }: any) {
 
   // Predefined icon options
   const iconOptions = [
-    { library: 'Ionicons' as const, name: 'logo-netflix', color: '#E50914', label: 'Netflix' },
+    { library: 'MaterialCommunityIcons' as const, name: 'filmstrip', color: '#E50914', label: 'Netflix' },
     { library: 'MaterialCommunityIcons' as const, name: 'spotify', color: '#1DB954', label: 'Spotify' },
     { library: 'MaterialCommunityIcons' as const, name: 'castle', color: '#113CCF', label: 'Disney+' },
     { library: 'Ionicons' as const, name: 'logo-youtube', color: '#FF0000', label: 'YouTube' },
-    { library: 'MaterialCommunityIcons' as const, name: 'adobe', color: '#FF0000', label: 'Adobe' },
+    { library: 'MaterialCommunityIcons' as const, name: 'alpha-a-box', color: '#FF0000', label: 'Adobe' },
     { library: 'MaterialCommunityIcons' as const, name: 'file-document', color: '#000000', label: 'Notion' },
     { library: 'Ionicons' as const, name: 'musical-notes', color: '#FF6B6B', label: 'Music' },
     { library: 'Ionicons' as const, name: 'game-controller', color: '#4ECDC4', label: 'Gaming' },
@@ -127,13 +127,29 @@ export function AddSubscriptionScreen({ navigation }: any) {
     ]);
   };
 
+  const handleBack = () => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+      return;
+    }
+    navigation.navigate('MainTabs');
+  };
+
   return (
     <ScrollView className="flex-1 bg-gray-50">
       <View className="p-4 pb-24">
         {/* Header */}
-        <View className="mb-6">
-          <Text className="text-2xl font-bold text-gray-900">Add Subscription</Text>
-          <Text className="text-sm text-gray-600 mt-1">Paste receipt or enter manually</Text>
+        <View className="flex-row items-center mb-6">
+          <TouchableOpacity
+            onPress={handleBack}
+            style={{ marginRight: 12, padding: 4 }}
+          >
+            <Ionicons name="arrow-back" size={24} color="#374151" />
+          </TouchableOpacity>
+          <View>
+            <Text className="text-2xl font-bold text-gray-900">Add Subscription</Text>
+            <Text className="text-sm text-gray-600 mt-1">Paste receipt or enter manually</Text>
+          </View>
         </View>
 
         {/* Tabs */}

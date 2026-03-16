@@ -19,7 +19,7 @@ export function LoginScreen({ navigation }: any) {
     setTimeout(() => {
       setIsLoading(false);
       // For demo purposes, accept any login
-      navigation.replace('Main');
+      navigation.replace('MainTabs');
     }, 1000);
   };
 

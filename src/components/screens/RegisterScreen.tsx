@@ -31,7 +31,7 @@ export function RegisterScreen({ navigation }: any) {
     setTimeout(() => {
       setIsLoading(false);
       Alert.alert('Success', 'Account created!', [
-        { text: 'OK', onPress: () => navigation.replace('Main') }
+        { text: 'OK', onPress: () => navigation.replace('MainTabs') }
       ]);
     }, 1000);
   };
