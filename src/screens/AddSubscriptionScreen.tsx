@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, TextInput, Alert, Switch, TouchableOpacity } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { Button, Input, Card } from '../ui';
+import { Button, Input, Card } from '../components/ui';
 
 export function AddSubscriptionScreen({ navigation }: any) {
-  const [activeTab, setActiveTab] = useState<'parse' | 'manual'>('parse');
   const [pastedText, setPastedText] = useState('');
   const [showPreview, setShowPreview] = useState(false);
 
   // Form state
   const [serviceName, setServiceName] = useState('');
-  const [category, setCategory] = useState('Entertainment');
+  const [category, setCategory] = useState('');
   const [monthlyCost, setMonthlyCost] = useState('');
   const [currency, setCurrency] = useState('THB');
   const [billingCycle, setBillingCycle] = useState('monthly');
@@ -132,7 +131,7 @@ export function AddSubscriptionScreen({ navigation }: any) {
       navigation.goBack();
       return;
     }
-    navigation.navigate('MainTabs');
+    navigation.navigate('AppTabs');
   };
 
   return (
@@ -152,78 +151,42 @@ export function AddSubscriptionScreen({ navigation }: any) {
           </View>
         </View>
 
-        {/* Tabs */}
-        <View className="flex-row bg-gray-200 rounded-xl p-1 mb-6">
-          <TouchableOpacity
-            onPress={() => setActiveTab('parse')}
-            className={`flex-1 py-2 px-4 rounded-lg ${
-              activeTab === 'parse' ? 'bg-white shadow-sm' : 'bg-transparent'
-            }`}
-          >
-            <Text className={`text-center font-medium ${
-              activeTab === 'parse' ? 'text-gray-900' : 'text-gray-600'
-            }`}>
-              Paste Text
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setActiveTab('manual')}
-            className={`flex-1 py-2 px-4 rounded-lg ${
-              activeTab === 'manual' ? 'bg-white shadow-sm' : 'bg-transparent'
-            }`}
-          >
-            <Text className={`text-center font-medium ${
-              activeTab === 'manual' ? 'text-gray-900' : 'text-gray-600'
-            }`}>
-              Manual Entry
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Tab Content */}
-        {activeTab === 'parse' ? (
-          <View>
-            <Card className="mb-4">
-              <Text className="text-sm font-medium text-gray-700 mb-2">
-                Paste Receipt Text
-              </Text>
-              <TextInput
-                className="w-full h-32 p-3 bg-gray-50 border border-gray-200 rounded-xl text-base text-gray-900"
-                placeholder="Paste email or SMS receipt here..."
-                placeholderTextColor="#9CA3AF"
-                multiline
-                textAlignVertical="top"
-                value={pastedText}
-                onChangeText={setPastedText}
-              />
-              <View className="mt-4">
-                <Button onPress={handleParse}>
-                  Parse Text
-                </Button>
-              </View>
-            </Card>
-
-            {/* Preview after parsing */}
-            {showPreview && serviceName && (
-              <Card className="mb-4 bg-teal-50 border border-teal-200">
-                <Text className="font-semibold text-gray-900 mb-2">✓ Detected:</Text>
-                <Text className="text-sm text-gray-700">Service: {serviceName}</Text>
-                <Text className="text-sm text-gray-700">Amount: {currency} {monthlyCost}</Text>
-                {nextBillDate && (
-                  <Text className="text-sm text-gray-700">Next Bill Date: {nextBillDate}</Text>
-                )}
-                {isTrial && <Text className="text-sm text-orange-600">Trial detected!</Text>}
-              </Card>
-            )}
+        <Card className="mb-4">
+          <Text className="text-sm font-medium text-gray-700 mb-2">
+            Paste Receipt Text
+          </Text>
+          <TextInput
+            className="w-full h-32 p-3 bg-gray-50 border border-gray-200 rounded-xl text-base text-gray-900"
+            placeholder="Paste email or SMS receipt here..."
+            placeholderTextColor="#9CA3AF"
+            multiline
+            textAlignVertical="top"
+            value={pastedText}
+            onChangeText={setPastedText}
+          />
+          <View className="mt-4">
+            <Button onPress={handleParse}>
+              Parse Text
+            </Button>
           </View>
-        ) : null}
+        </Card>
 
-        {/* Manual Form (shown in manual tab OR after parsing) */}
-        {(activeTab === 'manual' || showPreview) && (
-          <Card>
-            <Text className="text-sm font-medium text-gray-700 mb-4">
-              {activeTab === 'manual' ? 'Enter Details' : 'Review & Edit'}
-            </Text>
+        {showPreview && serviceName && (
+          <Card className="mb-4 bg-teal-50 border border-teal-200">
+            <Text className="font-semibold text-gray-900 mb-2">✓ Detected:</Text>
+            <Text className="text-sm text-gray-700">Service: {serviceName}</Text>
+            <Text className="text-sm text-gray-700">Amount: {currency} {monthlyCost}</Text>
+            {nextBillDate && (
+              <Text className="text-sm text-gray-700">Next Bill Date: {nextBillDate}</Text>
+            )}
+            {isTrial && <Text className="text-sm text-orange-600">Trial detected!</Text>}
+          </Card>
+        )}
+
+        <Card>
+          <Text className="text-sm font-medium text-gray-700 mb-4">
+            Enter Details
+          </Text>
 
             <View className="gap-4">
               <Input
@@ -342,7 +305,6 @@ export function AddSubscriptionScreen({ navigation }: any) {
               </Button>
             </View>
           </Card>
-        )}
       </View>
     </ScrollView>
   );

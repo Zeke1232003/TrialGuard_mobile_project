@@ -1,10 +1,10 @@
 import React, { useMemo } from 'react';
-import { View, Text, ScrollView } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { StatCard } from '../atoms';
-import { SubscriptionCard, TrialAlertCard } from '../molecules';
-import { Button } from '../ui';
-import { mockSubscriptions, mockUser } from '../../data/mockData';
+import { StatCard } from '../components/atoms';
+import { SubscriptionCard, TrialAlertCard } from '../components/molecules';
+import { Button } from '../components/ui';
+import { mockSubscriptions, mockUser } from '../data/mockData';
 
 export function DashboardScreen({ navigation }: any) {
   const activeSubscriptions = useMemo(
@@ -51,8 +51,9 @@ export function DashboardScreen({ navigation }: any) {
   const currencySymbol = mockUser.preferences.currency === 'THB' ? '฿' : '$';
 
   return (
-    <ScrollView className="flex-1 bg-gray-50">
-      <View className="p-4 pb-24">
+    <View className="flex-1 bg-gray-50">
+      <ScrollView className="flex-1 bg-gray-50">
+        <View className="p-4 pb-24">
         {/* Header */}
         <View className="pt-2 mb-6">
           <Text className="text-2xl font-bold text-gray-900">
@@ -109,7 +110,7 @@ export function DashboardScreen({ navigation }: any) {
             <View className="bg-white rounded-2xl p-8 items-center">
               <Ionicons name="trending-up" size={48} color="#9CA3AF" style={{ marginBottom: 12 }} />
               <Text className="text-gray-600 mb-4">No subscriptions yet</Text>
-              <Button onPress={() => navigation.navigate('AddSubscription')}>
+              <Button onPress={() => navigation.navigate('AddSubscription', { initialTab: 'manual' })}>
                 Add Your First
               </Button>
             </View>
@@ -125,7 +126,8 @@ export function DashboardScreen({ navigation }: any) {
             </View>
           )}
         </View>
-      </View>
-    </ScrollView>
+        </View>
+      </ScrollView>
+    </View>
   );
 }

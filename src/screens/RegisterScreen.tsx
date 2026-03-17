@@ -1,15 +1,27 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
-import { Button, Input } from '../ui';
+import { Button, Input } from '../components/ui';
 
-export function LoginScreen({ navigation }: any) {
+export function RegisterScreen({ navigation }: any) {
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = () => {
-    if (!email || !password) {
+  const handleRegister = () => {
+    if (!fullName || !email || !password || !confirmPassword) {
       Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      Alert.alert('Error', 'Passwords do not match');
+      return;
+    }
+
+    if (password.length < 6) {
+      Alert.alert('Error', 'Password must be at least 6 characters');
       return;
     }
 
@@ -18,8 +30,9 @@ export function LoginScreen({ navigation }: any) {
     // Simulate API call
     setTimeout(() => {
       setIsLoading(false);
-      // For demo purposes, accept any login
-      navigation.replace('MainTabs');
+      Alert.alert('Success', 'Account created!', [
+        { text: 'OK', onPress: () => navigation.replace('AppTabs') }
+      ]);
     }, 1000);
   };
 
@@ -45,10 +58,18 @@ export function LoginScreen({ navigation }: any) {
           {/* Auth Form */}
           <View className="bg-white rounded-3xl p-6 shadow-xl">
             <Text className="text-xl font-bold text-gray-900 mb-6 text-center">
-              Welcome Back
+              Create Account
             </Text>
 
             <View className="space-y-4">
+              <Input
+                label="Full Name"
+                placeholder="Enter your name"
+                value={fullName}
+                onChangeText={setFullName}
+                autoCapitalize="words"
+              />
+
               <Input
                 label="Email"
                 placeholder="student@example.com"
@@ -68,31 +89,33 @@ export function LoginScreen({ navigation }: any) {
                 autoCapitalize="none"
               />
 
+              <Input
+                label="Confirm Password"
+                placeholder="Confirm password"
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                secureTextEntry
+                autoCapitalize="none"
+              />
+
               <View className="mt-2" />
 
               <Button
-                onPress={handleLogin}
+                onPress={handleRegister}
                 loading={isLoading}
                 className="w-full py-6"
               >
-                Log In
+                Sign Up
               </Button>
             </View>
 
             <View className="mt-4 items-center">
               <Text
-                onPress={() => navigation.navigate('Register')}
+                onPress={() => navigation.navigate('Login')}
                 className="text-sm text-[#4FD1C5] font-medium"
               >
-                Don't have an account? Sign up
+                Already have an account? Log in
               </Text>
-            </View>
-
-            {/* Demo Credentials */}
-            <View className="mt-6 p-3 bg-teal-50 rounded-xl border border-teal-200">
-              <Text className="text-xs text-gray-600 mb-1 font-medium">Demo Account:</Text>
-              <Text className="text-xs text-gray-700">📧 demo@student.com</Text>
-              <Text className="text-xs text-gray-700">🔑 demo123</Text>
             </View>
           </View>
         </View>

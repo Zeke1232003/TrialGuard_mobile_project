@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Card } from '../ui';
-import { mockSubscriptions } from '../../data/mockData';
+import { Card } from '../components/ui';
+import { mockSubscriptions } from '../data/mockData';
 
 export function CalendarScreen({ navigation }: any) {
   const [currentDate, setCurrentDate] = useState(new Date());

@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, Switch, TouchableOpacity, Alert } from 'react-native';
 import { CommonActions } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { Card, Button } from '../ui';
-import { mockUser } from '../../data/mockData';
+import { Card, Button } from '../components/ui';
+import { mockUser } from '../data/mockData';
 
 export function SettingsScreen({ navigation }: any) {
   const [currency, setCurrency] = useState(mockUser.preferences.currency);
@@ -24,7 +24,12 @@ export function SettingsScreen({ navigation }: any) {
             navigation.dispatch(
               CommonActions.reset({
                 index: 0,
-                routes: [{ name: 'Login' }],
+                routes: [{
+                  name: 'Auth',
+                  state: {
+                    routes: [{ name: 'Login' }],
+                  },
+                }],
               })
             );
           },
@@ -49,7 +54,12 @@ export function SettingsScreen({ navigation }: any) {
                 onPress: () => navigation.dispatch(
                   CommonActions.reset({
                     index: 0,
-                    routes: [{ name: 'Login' }],
+                    routes: [{
+                      name: 'Auth',
+                      state: {
+                        routes: [{ name: 'Login' }],
+                      },
+                    }],
                   })
                 )
               }

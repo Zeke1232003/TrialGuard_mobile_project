@@ -2,9 +2,10 @@ import React from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useNavigation } from '@react-navigation/native';
+import { NavigatorScreenParams, useNavigation } from '@react-navigation/native';
 import { TouchableOpacity, View } from 'react-native';
 import {
+  LandingScreen,
   LoginScreen,
   RegisterScreen,
   DashboardScreen,
@@ -14,30 +15,49 @@ import {
   SettingsScreen,
 } from '../screens';
 
-export type MainTabParamList = {
+export type AppTabsParamList = {
   Dashboard: undefined;
   Calendar: undefined;
   Settings: undefined;
 };
 
-export type RootStackParamList = {
+export type AuthStackParamList = {
   Login: undefined;
   Register: undefined;
-  MainTabs: undefined;
-  AddSubscription: undefined;
+};
+
+export type RootStackParamList = {
+  Landing: undefined;
+  AuthStack: NavigatorScreenParams<AuthStackParamList> | undefined;
+  AppTabs: undefined;
+  AddSubscription: { initialTab?: 'parse' | 'manual' } | undefined;
   SubscriptionDetail: { id?: string } | undefined;
 };
 
-const Stack = createNativeStackNavigator<RootStackParamList>();
-const Tab = createBottomTabNavigator<MainTabParamList>();
+const RootStack = createNativeStackNavigator<RootStackParamList>();
+const AuthStack = createNativeStackNavigator<AuthStackParamList>();
+const AppTabs = createBottomTabNavigator<AppTabsParamList>();
 
-function MainTabNavigator() {
-  const navigation = useNavigation();
+function AuthNavigator() {
+  return (
+    <AuthStack.Navigator screenOptions={{ headerShown: false }}>
+      <AuthStack.Screen name="Login" component={LoginScreen} />
+      <AuthStack.Screen name="Register" component={RegisterScreen} />
+    </AuthStack.Navigator>
+  );
+}
+
+function AppTabsNavigator() {
+  const navigation = useNavigation<any>();
+
+  const handleAddPress = () => {
+    navigation.navigate('AddSubscription', { initialTab: 'manual' });
+  };
 
   return (
     <View style={{ flex: 1 }}>
-      <Tab.Navigator
-        screenOptions={({ route }: { route: { name: keyof MainTabParamList } }) => ({
+      <AppTabs.Navigator
+        screenOptions={({ route }: { route: { name: keyof AppTabsParamList } }) => ({
           headerShown: false,
           tabBarActiveTintColor: '#4FD1C5',
           tabBarInactiveTintColor: '#9CA3AF',
@@ -65,10 +85,10 @@ function MainTabNavigator() {
           },
         })}
       >
-        <Tab.Screen name="Dashboard" component={DashboardScreen} />
-        <Tab.Screen name="Calendar" component={CalendarScreen} />
-        <Tab.Screen name="Settings" component={SettingsScreen} />
-      </Tab.Navigator>
+        <AppTabs.Screen name="Dashboard" component={DashboardScreen} />
+        <AppTabs.Screen name="Calendar" component={CalendarScreen} />
+        <AppTabs.Screen name="Settings" component={SettingsScreen} />
+      </AppTabs.Navigator>
 
       <TouchableOpacity
         style={{
@@ -83,7 +103,7 @@ function MainTabNavigator() {
           justifyContent: 'center',
           elevation: 8,
         }}
-        onPress={() => navigation.navigate('AddSubscription' as never)}
+        onPress={handleAddPress}
       >
         <Ionicons name="add" size={32} color="white" />
       </TouchableOpacity>
@@ -93,16 +113,16 @@ function MainTabNavigator() {
 
 export function NewAppNavigator() {
   return (
-    <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Login" component={LoginScreen} />
-      <Stack.Screen name="Register" component={RegisterScreen} />
-      <Stack.Screen name="MainTabs" component={MainTabNavigator} />
-      <Stack.Screen name="AddSubscription" component={AddSubscriptionScreen} />
-      <Stack.Screen
+    <RootStack.Navigator initialRouteName="Landing" screenOptions={{ headerShown: false }}>
+      <RootStack.Screen name="Landing" component={LandingScreen} />
+      <RootStack.Screen name="AuthStack" component={AuthNavigator} />
+      <RootStack.Screen name="AppTabs" component={AppTabsNavigator} />
+      <RootStack.Screen name="AddSubscription" component={AddSubscriptionScreen} />
+      <RootStack.Screen
         name="SubscriptionDetail"
         component={SubscriptionDetailScreen}
         options={{ headerShown: true, title: 'Subscription Details' }}
       />
-    </Stack.Navigator>
+    </RootStack.Navigator>
   );
 }
