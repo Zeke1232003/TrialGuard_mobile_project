@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, ScrollView, Alert } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { Button, Badge, Card } from '../ui';
-import { mockSubscriptions } from '../../data/mockData';
+import { Button, Badge, Card } from '../components/ui';
+import { mockSubscriptions } from '../data/mockData';
 
 export function SubscriptionDetailScreen({ navigation, route }: any) {
   const subscription = mockSubscriptions.find(sub => sub.id === route.params?.id);
@@ -179,8 +179,8 @@ export function SubscriptionDetailScreen({ navigation, route }: any) {
         {/* Action Buttons */}
         <View className="gap-3">
           <Button
-            variant="outline"
-            onPress={() => navigation.navigate('AddSubscription')}
+              variant="outline"
+              onPress={() => navigation.navigate('AddSubscription', { initialTab: 'manual' })}
           >
             Edit Subscription
           </Button>

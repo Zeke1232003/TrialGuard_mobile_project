@@ -50,7 +50,7 @@ export const mockSubscriptions: Subscription[] = [
     status: 'active',
     notes: 'Premium plan - 4 screens',
     iconLibrary: 'Ionicons',
-    iconName: 'logo-netflix',
+    iconName: 'filmstrip',
     iconColor: '#E50914',
   },
   {
@@ -96,7 +96,7 @@ export const mockSubscriptions: Subscription[] = [
     status: 'active',
     notes: 'Student license',
     iconLibrary: 'MaterialCommunityIcons',
-    iconName: 'adobe',
+    iconName: 'alpha-a-box',
     iconColor: '#FF0000',
   },
   {

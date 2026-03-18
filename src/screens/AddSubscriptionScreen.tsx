@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, TextInput, Alert, Switch, TouchableOpacity } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { Button, Input, Card } from '../ui';
+import { Button, Input, Card } from '../components/ui';
 
 export function AddSubscriptionScreen({ navigation }: any) {
-  const [activeTab, setActiveTab] = useState<'parse' | 'manual'>('parse');
   const [pastedText, setPastedText] = useState('');
   const [showPreview, setShowPreview] = useState(false);
 
   // Form state
   const [serviceName, setServiceName] = useState('');
-  const [category, setCategory] = useState('Entertainment');
+  const [category, setCategory] = useState('');
   const [monthlyCost, setMonthlyCost] = useState('');
   const [currency, setCurrency] = useState('THB');
   const [billingCycle, setBillingCycle] = useState('monthly');
@@ -27,11 +26,11 @@ export function AddSubscriptionScreen({ navigation }: any) {
 
   // Predefined icon options
   const iconOptions = [
-    { library: 'Ionicons' as const, name: 'logo-netflix', color: '#E50914', label: 'Netflix' },
+    { library: 'MaterialCommunityIcons' as const, name: 'filmstrip', color: '#E50914', label: 'Netflix' },
     { library: 'MaterialCommunityIcons' as const, name: 'spotify', color: '#1DB954', label: 'Spotify' },
     { library: 'MaterialCommunityIcons' as const, name: 'castle', color: '#113CCF', label: 'Disney+' },
     { library: 'Ionicons' as const, name: 'logo-youtube', color: '#FF0000', label: 'YouTube' },
-    { library: 'MaterialCommunityIcons' as const, name: 'adobe', color: '#FF0000', label: 'Adobe' },
+    { library: 'MaterialCommunityIcons' as const, name: 'alpha-a-box', color: '#FF0000', label: 'Adobe' },
     { library: 'MaterialCommunityIcons' as const, name: 'file-document', color: '#000000', label: 'Notion' },
     { library: 'Ionicons' as const, name: 'musical-notes', color: '#FF6B6B', label: 'Music' },
     { library: 'Ionicons' as const, name: 'game-controller', color: '#4ECDC4', label: 'Gaming' },
@@ -127,87 +126,67 @@ export function AddSubscriptionScreen({ navigation }: any) {
     ]);
   };
 
+  const handleBack = () => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+      return;
+    }
+    navigation.navigate('AppTabs');
+  };
+
   return (
     <ScrollView className="flex-1 bg-gray-50">
       <View className="p-4 pb-24">
         {/* Header */}
-        <View className="mb-6">
-          <Text className="text-2xl font-bold text-gray-900">Add Subscription</Text>
-          <Text className="text-sm text-gray-600 mt-1">Paste receipt or enter manually</Text>
-        </View>
-
-        {/* Tabs */}
-        <View className="flex-row bg-gray-200 rounded-xl p-1 mb-6">
+        <View className="flex-row items-center mb-6">
           <TouchableOpacity
-            onPress={() => setActiveTab('parse')}
-            className={`flex-1 py-2 px-4 rounded-lg ${
-              activeTab === 'parse' ? 'bg-white shadow-sm' : 'bg-transparent'
-            }`}
+            onPress={handleBack}
+            style={{ marginRight: 12, padding: 4 }}
           >
-            <Text className={`text-center font-medium ${
-              activeTab === 'parse' ? 'text-gray-900' : 'text-gray-600'
-            }`}>
-              Paste Text
-            </Text>
+            <Ionicons name="arrow-back" size={24} color="#374151" />
           </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setActiveTab('manual')}
-            className={`flex-1 py-2 px-4 rounded-lg ${
-              activeTab === 'manual' ? 'bg-white shadow-sm' : 'bg-transparent'
-            }`}
-          >
-            <Text className={`text-center font-medium ${
-              activeTab === 'manual' ? 'text-gray-900' : 'text-gray-600'
-            }`}>
-              Manual Entry
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Tab Content */}
-        {activeTab === 'parse' ? (
           <View>
-            <Card className="mb-4">
-              <Text className="text-sm font-medium text-gray-700 mb-2">
-                Paste Receipt Text
-              </Text>
-              <TextInput
-                className="w-full h-32 p-3 bg-gray-50 border border-gray-200 rounded-xl text-base text-gray-900"
-                placeholder="Paste email or SMS receipt here..."
-                placeholderTextColor="#9CA3AF"
-                multiline
-                textAlignVertical="top"
-                value={pastedText}
-                onChangeText={setPastedText}
-              />
-              <View className="mt-4">
-                <Button onPress={handleParse}>
-                  Parse Text
-                </Button>
-              </View>
-            </Card>
-
-            {/* Preview after parsing */}
-            {showPreview && serviceName && (
-              <Card className="mb-4 bg-teal-50 border border-teal-200">
-                <Text className="font-semibold text-gray-900 mb-2">✓ Detected:</Text>
-                <Text className="text-sm text-gray-700">Service: {serviceName}</Text>
-                <Text className="text-sm text-gray-700">Amount: {currency} {monthlyCost}</Text>
-                {nextBillDate && (
-                  <Text className="text-sm text-gray-700">Next Bill Date: {nextBillDate}</Text>
-                )}
-                {isTrial && <Text className="text-sm text-orange-600">Trial detected!</Text>}
-              </Card>
-            )}
+            <Text className="text-2xl font-bold text-gray-900">Add Subscription</Text>
+            <Text className="text-sm text-gray-600 mt-1">Paste receipt or enter manually</Text>
           </View>
-        ) : null}
+        </View>
 
-        {/* Manual Form (shown in manual tab OR after parsing) */}
-        {(activeTab === 'manual' || showPreview) && (
-          <Card>
-            <Text className="text-sm font-medium text-gray-700 mb-4">
-              {activeTab === 'manual' ? 'Enter Details' : 'Review & Edit'}
-            </Text>
+        <Card className="mb-4">
+          <Text className="text-sm font-medium text-gray-700 mb-2">
+            Paste Receipt Text
+          </Text>
+          <TextInput
+            className="w-full h-32 p-3 bg-gray-50 border border-gray-200 rounded-xl text-base text-gray-900"
+            placeholder="Paste email or SMS receipt here..."
+            placeholderTextColor="#9CA3AF"
+            multiline
+            textAlignVertical="top"
+            value={pastedText}
+            onChangeText={setPastedText}
+          />
+          <View className="mt-4">
+            <Button onPress={handleParse}>
+              Parse Text
+            </Button>
+          </View>
+        </Card>
+
+        {showPreview && serviceName && (
+          <Card className="mb-4 bg-teal-50 border border-teal-200">
+            <Text className="font-semibold text-gray-900 mb-2">✓ Detected:</Text>
+            <Text className="text-sm text-gray-700">Service: {serviceName}</Text>
+            <Text className="text-sm text-gray-700">Amount: {currency} {monthlyCost}</Text>
+            {nextBillDate && (
+              <Text className="text-sm text-gray-700">Next Bill Date: {nextBillDate}</Text>
+            )}
+            {isTrial && <Text className="text-sm text-orange-600">Trial detected!</Text>}
+          </Card>
+        )}
+
+        <Card>
+          <Text className="text-sm font-medium text-gray-700 mb-4">
+            Enter Details
+          </Text>
 
             <View className="gap-4">
               <Input
@@ -326,7 +305,6 @@ export function AddSubscriptionScreen({ navigation }: any) {
               </Button>
             </View>
           </Card>
-        )}
       </View>
     </ScrollView>
   );

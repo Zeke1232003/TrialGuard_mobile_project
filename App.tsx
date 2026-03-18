@@ -6,13 +6,16 @@
 import './global.css';
 import React from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { NewAppNavigator } from './src/components/navigation/NewAppNavigator';
+import RootNavigator from './src/navigation/RootNavigator';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { NavigationContainer } from '@react-navigation/native';
 
 export default function App() {
   return (
     <SafeAreaProvider>
-      <NewAppNavigator />
+      <NavigationContainer>
+        <RootNavigator />
+      </NavigationContainer>
       <StatusBar style="auto" />
     </SafeAreaProvider>
   );

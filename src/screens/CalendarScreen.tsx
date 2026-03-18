@@ -1,11 +1,22 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Card } from '../ui';
-import { mockSubscriptions } from '../../data/mockData';
+import { Card } from '../components/ui';
+import { mockSubscriptions } from '../data/mockData';
 
 export function CalendarScreen({ navigation }: any) {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const { width } = useWindowDimensions();
+
+  const calendarCellSize = useMemo(() => {
+    const screenPadding = 32;
+    const cardHorizontalPadding = 32;
+    const computedSize = (width - screenPadding - cardHorizontalPadding) / 7;
+    return Math.max(36, Math.min(computedSize, 56));
+  }, [width]);
+
+  const titleFontSize = width < 360 ? 18 : 20;
+  const dayNumberFontSize = width < 360 ? 12 : 14;
 
   // Get calendar data
   const calendarData = useMemo(() => {
@@ -62,7 +73,7 @@ export function CalendarScreen({ navigation }: any) {
 
     // Add empty cells for days before month starts
     for (let i = 0; i < startingDayOfWeek; i++) {
-      days.push(<View key={`empty-${i}`} className="flex-1 aspect-square" />);
+      days.push(<View key={`empty-${i}`} style={{ width: calendarCellSize, height: calendarCellSize }} />);
     }
 
     // Add days of the month
@@ -75,20 +86,25 @@ export function CalendarScreen({ navigation }: any) {
         calendarData.year === new Date().getFullYear();
 
       days.push(
-        <View key={day} className="flex-1 aspect-square p-1">
+        <View key={day} style={{ width: calendarCellSize, height: calendarCellSize, padding: 2 }}>
           <View
             className={`flex-1 items-center justify-center rounded-lg ${
               isToday ? 'bg-teal-100 border-2 border-[#4FD1C5]' : ''
             } ${hasBills ? 'bg-blue-50' : ''}`}
           >
-            <Text className={`text-sm ${isToday ? 'font-bold text-[#4FD1C5]' : 'text-gray-900'}`}>
+            <Text
+              className={isToday ? 'font-bold text-[#4FD1C5]' : 'text-gray-900'}
+              style={{ fontSize: dayNumberFontSize }}
+            >
               {day}
             </Text>
             {hasBills && (
               <View className="w-1.5 h-1.5 bg-[#4FD1C5] rounded-full mt-1" />
             )}
             {billCount > 0 && (
-              <Text className="text-xs text-gray-600 mt-0.5">{billCount}</Text>
+              <Text className="text-gray-600 mt-0.5" style={{ fontSize: width < 360 ? 10 : 12 }}>
+                {billCount}
+              </Text>
             )}
           </View>
         </View>
@@ -120,11 +136,11 @@ export function CalendarScreen({ navigation }: any) {
       <View className="gap-3">
         {bills.map(({ day, subscriptions, total }) => (
           <Card key={day}>
-            <View className="flex-row items-center justify-between mb-3">
+            <View className="flex-row items-start justify-between mb-3">
               <Text className="text-lg font-semibold text-gray-900">
                 {monthNames[calendarData.month]} {day}
               </Text>
-              <Text className="text-sm text-gray-600">
+              <Text className="text-sm text-gray-600 text-right" style={{ maxWidth: '45%' }}>
                 ฿{total.toFixed(0)} • {subscriptions.length} bill{subscriptions.length > 1 ? 's' : ''}
               </Text>
             </View>
@@ -153,10 +169,10 @@ export function CalendarScreen({ navigation }: any) {
             onPress={handlePreviousMonth}
             className="w-10 h-10 items-center justify-center bg-white rounded-lg shadow-sm"
           >
-            <Text className="text-xl text-gray-900">←</Text>
+            <Ionicons name="chevron-back" size={22} color="#111827" />
           </TouchableOpacity>
 
-          <Text className="text-xl font-bold text-gray-900">
+          <Text className="font-bold text-gray-900" style={{ fontSize: titleFontSize }}>
             {monthNames[calendarData.month]} {calendarData.year}
           </Text>
 
@@ -164,23 +180,23 @@ export function CalendarScreen({ navigation }: any) {
             onPress={handleNextMonth}
             className="w-10 h-10 items-center justify-center bg-white rounded-lg shadow-sm"
           >
-            <Text className="text-xl text-gray-900">→</Text>
+            <Ionicons name="chevron-forward" size={22} color="#111827" />
           </TouchableOpacity>
         </View>
 
         {/* Calendar Grid */}
         <Card className="mb-6">
           {/* Day names */}
-          <View className="flex-row mb-2">
+          <View className="flex-row mb-2 self-center" style={{ width: calendarCellSize * 7 }}>
             {dayNames.map((day) =>(
-              <View key={day} className="flex-1 items-center">
+              <View key={day} style={{ width: calendarCellSize }} className="items-center">
                 <Text className="text-xs font-medium text-gray-600">{day}</Text>
               </View>
             ))}
           </View>
 
           {/* Calendar days */}
-          <View className="flex-row flex-wrap">
+          <View className="flex-row flex-wrap self-center" style={{ width: calendarCellSize * 7 }}>
             {renderCalendarDays()}
           </View>
         </Card>
