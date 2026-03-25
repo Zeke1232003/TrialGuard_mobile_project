@@ -3,13 +3,14 @@ import { View, Text, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'r
 import { Button, Input } from '../components/ui';
 
 export function RegisterScreen({ navigation }: any) {
+  const { register } = useAuthStore();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if (!fullName || !email || !password || !confirmPassword) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
@@ -26,14 +27,17 @@ export function RegisterScreen({ navigation }: any) {
     }
 
     setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+
+    try {
+      await register(email, password, fullName);
       Alert.alert('Success', 'Account created!', [
         { text: 'OK', onPress: () => navigation.replace('AppTabs') }
       ]);
-    }, 1000);
+    } catch (error) {
+      Alert.alert('Registration Failed', error instanceof Error ? error.message : 'Unable to register');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

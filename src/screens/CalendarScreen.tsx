@@ -30,10 +30,10 @@ export function CalendarScreen({ navigation }: any) {
     const startingDayOfWeek = firstDay.getDay();
 
     // Create bills map by date
-    const billsByDate: { [key: number]: typeof mockSubscriptions } = {};
+    const billsByDate: { [key: number]: typeof subscriptions } = {};
     
-    mockSubscriptions.forEach((sub) => {
-      const billDate = new Date(sub.nextBillDate);
+    subscriptions.forEach((sub) => {
+      const billDate = new Date(sub.nextBillingDate);
       if (billDate.getMonth() === month && billDate.getFullYear() === year) {
         const day = billDate.getDate();
         if (!billsByDate[day]) {
@@ -50,7 +50,7 @@ export function CalendarScreen({ navigation }: any) {
       startingDayOfWeek,
       billsByDate,
     };
-  }, [currentDate]);
+  }, [currentDate, subscriptions]);
 
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
@@ -120,7 +120,7 @@ export function CalendarScreen({ navigation }: any) {
       .map(([day, subs]) => ({
         day: parseInt(day),
         subscriptions: subs,
-        total: subs.reduce((sum, sub) => sum + sub.monthlyCost, 0),
+        total: subs.reduce((sum, sub) => sum + sub.cost, 0),
       }));
 
     if (bills.length === 0) {
@@ -150,8 +150,8 @@ export function CalendarScreen({ navigation }: any) {
                 onPress={() => navigation.navigate('SubscriptionDetail', { id: sub.id })}
                 className="flex-row items-center justify-between py-2 border-t border-gray-100"
               >
-                <Text className="text-gray-900">{sub.serviceName}</Text>
-                <Text className="font-medium text-gray-900">฿{sub.monthlyCost}</Text>
+                <Text className="text-gray-900">{sub.name}</Text>
+                <Text className="font-medium text-gray-900">฿{sub.cost}</Text>
               </TouchableOpacity>
             ))}
           </Card>

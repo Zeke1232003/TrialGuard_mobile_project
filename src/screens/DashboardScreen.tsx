@@ -7,15 +7,31 @@ import { Button } from '../components/ui';
 import { mockSubscriptions, mockUser } from '../data/mockData';
 
 export function DashboardScreen({ navigation }: any) {
+  const { subscriptions, fetchSubscriptions, error, clearError } = useSubscriptionStore();
+  const { user } = useAuthStore();
+
+  useEffect(() => {
+    if (!user?.id) {
+      return;
+    }
+    fetchSubscriptions();
+  }, [fetchSubscriptions, user?.id]);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchSubscriptions();
+    }, [fetchSubscriptions])
+  );
+
   const activeSubscriptions = useMemo(
-    () => mockSubscriptions.filter((sub) => sub.status === 'active'),
-    []
+    () => subscriptions.filter((sub) => sub.status !== 'cancelled' && sub.status !== 'expired'),
+    [subscriptions]
   );
 
   // Calculate days until next bill
   const subscriptionsWithDays = useMemo(() => {
     return activeSubscriptions.map((sub) => {
-      const nextBillDate = new Date(sub.nextBillDate);
+      const nextBillDate = new Date(sub.nextBillingDate);
       const today = new Date();
       const daysUntil = Math.ceil((nextBillDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
       return { ...sub, daysUntil };
@@ -31,7 +47,7 @@ export function DashboardScreen({ navigation }: any) {
   // Filter trials ending soon (next 7 days)
   const trialsEnding = useMemo(() => {
     return activeSubscriptions
-      .filter((sub) => sub.isTrial && sub.trialEndDate)
+      .filter((sub) => (sub.status === 'trial' || !!sub.trialEndDate) && sub.trialEndDate)
       .map((sub) => {
         const trialEndDate = new Date(sub.trialEndDate!);
         const today = new Date();
@@ -44,11 +60,12 @@ export function DashboardScreen({ navigation }: any) {
 
   // Calculate total monthly cost
   const totalMonthlyCost = useMemo(
-    () => activeSubscriptions.reduce((sum, sub) => sum + sub.monthlyCost, 0),
+    () => activeSubscriptions.reduce((sum, sub) => sum + sub.cost, 0),
     [activeSubscriptions]
   );
 
-  const currencySymbol = mockUser.preferences.currency === 'THB' ? '฿' : '$';
+  const currencySymbol = '฿';
+  const firstName = user?.displayName?.split(' ')[0] || 'User';
 
   return (
     <View className="flex-1 bg-gray-50">
@@ -57,7 +74,7 @@ export function DashboardScreen({ navigation }: any) {
         {/* Header */}
         <View className="pt-2 mb-6">
           <Text className="text-2xl font-bold text-gray-900">
-            Hello, {mockUser.fullName.split(' ')[0]}!
+            Hello, {firstName}!
           </Text>
           <Text className="text-sm text-gray-600 mt-1">Track your subscriptions</Text>
         </View>
@@ -91,12 +108,29 @@ export function DashboardScreen({ navigation }: any) {
             {trialsEnding.map((sub) => (
               <View key={sub.id} className="mb-3">
                 <TrialAlertCard
-                  serviceName={sub.serviceName}
+                  serviceName={sub.name}
                   daysRemaining={sub.daysUntil}
                   onView={() => navigation.navigate('SubscriptionDetail', { id: sub.id })}
                 />
               </View>
             ))}
+          </View>
+        )}
+
+        {error && (
+          <View className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3">
+            <Text className="text-sm text-red-700">Failed to load subscriptions: {error}</Text>
+            <View className="mt-2 flex-row">
+              <Button
+                size="sm"
+                onPress={() => {
+                  clearError();
+                  fetchSubscriptions();
+                }}
+              >
+                Retry
+              </Button>
+            </View>
           </View>
         )}
 
@@ -119,7 +153,18 @@ export function DashboardScreen({ navigation }: any) {
               {subscriptionsWithDays.map((sub) => (
                 <SubscriptionCard
                   key={sub.id}
-                  {...sub}
+                  id={sub.id}
+                  serviceName={sub.name}
+                  category={sub.category || 'General'}
+                  monthlyCost={sub.cost}
+                  currency={sub.currency}
+                  nextBillDate={sub.nextBillingDate.toISOString()}
+                  billingCycle={sub.billingCycle}
+                  isTrial={sub.status === 'trial' || !!sub.trialEndDate}
+                  iconLibrary={sub.iconLibrary}
+                  iconName={sub.iconName}
+                  iconColor={sub.iconColor}
+                  daysUntil={sub.daysUntil}
                   onPress={() => navigation.navigate('SubscriptionDetail', { id: sub.id })}
                 />
               ))}

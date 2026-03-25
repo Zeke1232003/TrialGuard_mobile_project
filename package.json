@@ -6,7 +6,9 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "backend:dev": "npm --prefix backend run dev",
+    "backend:start": "npm --prefix backend run start"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
@@ -14,6 +16,7 @@
     "@react-navigation/native": "^6.1.9",
     "@react-navigation/native-stack": "^6.9.17",
     "expo": "^54.0.33",
+    "expo-constants": "^55.0.9",
     "expo-status-bar": "~3.0.9",
     "firebase": "^12.10.0",
     "react": "19.1.0",

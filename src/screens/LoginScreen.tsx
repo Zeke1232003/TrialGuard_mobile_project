@@ -3,20 +3,24 @@ import { View, Text, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'r
 import { Button, Input } from '../components/ui';
 
 export function LoginScreen({ navigation }: any) {
+  const { login } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
 
     setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
+
+    try {
+      await login(email, password);
+    } catch (error) {
+      Alert.alert('Login Failed', error instanceof Error ? error.message : 'Unable to login');
+    } finally {
       setIsLoading(false);
       // For demo purposes, accept any login
       navigation.replace('AppTabs');

@@ -1,17 +1,36 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Switch, TouchableOpacity, Alert } from 'react-native';
-import { CommonActions } from '@react-navigation/native';
+import { View, Text, ScrollView, Switch, TouchableOpacity, Alert, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Card, Button } from '../components/ui';
 import { mockUser } from '../data/mockData';
 
 export function SettingsScreen({ navigation }: any) {
-  const [currency, setCurrency] = useState(mockUser.preferences.currency);
-  const [notifications, setNotifications] = useState(mockUser.preferences.notifications);
+  const { user, logout } = useAuthStore();
+  const [currency, setCurrency] = useState<'THB' | 'USD'>('THB');
+  const [notifications, setNotifications] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
   const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
 
+  const displayName = user?.displayName || 'User';
+  const email = user?.email || 'No email';
+
+  const doLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      Alert.alert('Error', error instanceof Error ? error.message : 'Logout failed');
+    }
+  };
+
   const handleLogout = () => {
+    if (Platform.OS === 'web') {
+      const confirmed = globalThis.confirm('Are you sure you want to logout?');
+      if (confirmed) {
+        void doLogout();
+      }
+      return;
+    }
+
     Alert.alert(
       'Logout',
       'Are you sure you want to logout?',
@@ -39,6 +58,17 @@ export function SettingsScreen({ navigation }: any) {
   };
 
   const handleDeleteAccount = () => {
+    if (Platform.OS === 'web') {
+      const confirmed = globalThis.confirm(
+        'This will permanently delete your account and all data. This action cannot be undone.'
+      );
+      if (confirmed) {
+        globalThis.alert('Account Deleted');
+        void doLogout();
+      }
+      return;
+    }
+
     Alert.alert(
       'Delete Account',
       'This will permanently delete your account and all data. This action cannot be undone.',
@@ -78,11 +108,11 @@ export function SettingsScreen({ navigation }: any) {
           <View className="items-center py-4">
             <View className="w-20 h-20 bg-[#4FD1C5] rounded-full items-center justify-center mb-3">
               <Text className="text-white text-3xl font-bold">
-                {mockUser.fullName.charAt(0)}
+                {displayName.charAt(0)}
               </Text>
             </View>
-            <Text className="text-xl font-bold text-gray-900">{mockUser.fullName}</Text>
-            <Text className="text-sm text-gray-600 mt-1">{mockUser.email}</Text>
+            <Text className="text-xl font-bold text-gray-900">{displayName}</Text>
+            <Text className="text-sm text-gray-600 mt-1">{email}</Text>
           </View>
         </Card>
 

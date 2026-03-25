@@ -1,11 +1,18 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, ScrollView, Alert } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Button, Badge, Card } from '../components/ui';
 import { mockSubscriptions } from '../data/mockData';
 
 export function SubscriptionDetailScreen({ navigation, route }: any) {
-  const subscription = mockSubscriptions.find(sub => sub.id === route.params?.id);
+  const { getSubscriptionById, updateSubscription, deleteSubscription, fetchSubscriptions } = useSubscriptionStore();
+  const subscription = getSubscriptionById(route.params?.id);
+
+  useEffect(() => {
+    if (!subscription) {
+      fetchSubscriptions();
+    }
+  }, [subscription, fetchSubscriptions]);
 
   if (!subscription) {
     return (
@@ -19,7 +26,7 @@ export function SubscriptionDetailScreen({ navigation, route }: any) {
   }
 
   const currencySymbol = subscription.currency === 'THB' ? '฿' : '$';
-  const formattedDate = new Date(subscription.nextBillDate).toLocaleDateString('en-US', {
+  const formattedDate = new Date(subscription.nextBillingDate).toLocaleDateString('en-US', {
     month: 'long',
     day: 'numeric',
     year: 'numeric',
@@ -28,16 +35,15 @@ export function SubscriptionDetailScreen({ navigation, route }: any) {
   const handleDelete = () => {
     Alert.alert(
       'Delete Subscription',
-      `Are you sure you want to delete ${subscription.serviceName}?`,
+      `Are you sure you want to delete ${subscription.name}?`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: () => {
-            Alert.alert('Success', 'Subscription deleted', [
-              { text: 'OK', onPress: () => navigation.goBack() }
-            ]);
+          onPress: async () => {
+            await deleteSubscription(subscription.id);
+            Alert.alert('Success', 'Subscription deleted', [{ text: 'OK', onPress: () => navigation.goBack() }]);
           },
         },
       ]
@@ -47,12 +53,13 @@ export function SubscriptionDetailScreen({ navigation, route }: any) {
   const handleCancel = () => {
     Alert.alert(
       'Mark as Cancelled',
-      `Mark ${subscription.serviceName} as cancelled?`,
+      `Mark ${subscription.name} as cancelled?`,
       [
         { text: 'No', style: 'cancel' },
         {
           text: 'Yes',
-          onPress: () => {
+          onPress: async () => {
+            await updateSubscription(subscription.id, { status: 'cancelled' });
             Alert.alert('Success', 'Subscription marked as cancelled');
           },
         },
@@ -90,11 +97,11 @@ export function SubscriptionDetailScreen({ navigation, route }: any) {
           <View className="flex-row items-start justify-between mb-4">
             <View className="flex-1">
               <Text className="text-2xl font-bold text-gray-900 mb-2">
-                {subscription.serviceName}
+                {subscription.name}
               </Text>
               <View className="flex-row items-center gap-2">
-                <Badge variant="default">{subscription.category}</Badge>
-                {subscription.isTrial && <Badge variant="success">Trial</Badge>}
+                <Badge variant="default">{subscription.category || 'General'}</Badge>
+                {(subscription.status === 'trial' || !!subscription.trialEndDate) && <Badge variant="success">Trial</Badge>}
                 <Badge variant={subscription.status === 'active' ? 'success' : 'default'}>
                   {subscription.status}
                 </Badge>
@@ -104,7 +111,7 @@ export function SubscriptionDetailScreen({ navigation, route }: any) {
 
           <View className="border-t border-gray-200 pt-4">
             <Text className="text-4xl font-bold text-[#4FD1C5] mb-1">
-              {currencySymbol}{subscription.monthlyCost}
+              {currencySymbol}{subscription.cost}
             </Text>
             <Text className="text-sm text-gray-600 capitalize">
               per {subscription.billingCycle}
@@ -134,7 +141,7 @@ export function SubscriptionDetailScreen({ navigation, route }: any) {
               <Text className="font-medium text-gray-900">{subscription.currency}</Text>
             </View>
 
-            {subscription.isTrial && subscription.trialEndDate && (
+            {subscription.trialEndDate && (
               <View className="flex-row justify-between py-2 border-b border-gray-100">
                 <Text className="text-gray-600">Trial End Date</Text>
                 <Text className="font-medium text-orange-600">
@@ -164,13 +171,13 @@ export function SubscriptionDetailScreen({ navigation, route }: any) {
             <View className="flex-row justify-between">
               <Text className="text-gray-600">Monthly</Text>
               <Text className="font-medium text-gray-900">
-                {currencySymbol}{subscription.monthlyCost}
+                {currencySymbol}{subscription.cost}
               </Text>
             </View>
             <View className="flex-row justify-between">
               <Text className="text-gray-600">Yearly (estimated)</Text>
               <Text className="font-medium text-gray-900">
-                {currencySymbol}{(subscription.monthlyCost * 12).toFixed(2)}
+                {currencySymbol}{(subscription.cost * 12).toFixed(2)}
               </Text>
             </View>
           </View>

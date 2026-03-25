@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TextInput, Alert, Switch, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, TextInput, Alert, Switch, TouchableOpacity, Platform } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Button, Input, Card } from '../components/ui';
 
@@ -38,92 +38,296 @@ export function AddSubscriptionScreen({ navigation }: any) {
     { library: 'MaterialCommunityIcons' as const, name: 'cloud', color: '#4A90E2', label: 'Cloud' },
   ];
 
+  const formatDateToYmd = (dateInput: string): string | null => {
+    const trimmed = dateInput.trim();
+    if (!trimmed) return null;
+
+    const monthMap: Record<string, string> = {
+      january: '01', jan: '01',
+      february: '02', feb: '02',
+      march: '03', mar: '03',
+      april: '04', apr: '04',
+      may: '05',
+      june: '06', jun: '06',
+      july: '07', jul: '07',
+      august: '08', aug: '08',
+      september: '09', sep: '09', sept: '09',
+      october: '10', oct: '10',
+      november: '11', nov: '11',
+      december: '12', dec: '12',
+    };
+
+    if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+      return trimmed;
+    }
+
+    // Parse "Month DD, YYYY" safely without relying on Date text parsing
+    const monthDayYear = trimmed.match(/^([A-Za-z]+)\s+(\d{1,2}),\s*(\d{4})$/);
+    if (monthDayYear) {
+      const monthName = monthDayYear[1].toLowerCase();
+      const day = monthDayYear[2].padStart(2, '0');
+      const year = monthDayYear[3];
+      const month = monthMap[monthName];
+
+      if (month) {
+        return `${year}-${month}-${day}`;
+      }
+    }
+
+    const parsed = new Date(trimmed);
+    if (Number.isNaN(parsed.getTime())) {
+      return null;
+    }
+
+    const year = parsed.getFullYear();
+    const month = String(parsed.getMonth() + 1).padStart(2, '0');
+    const day = String(parsed.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const handleParse = () => {
     if (!pastedText.trim()) {
       Alert.alert('Error', 'Please paste some text to parse');
       return;
     }
 
-    // Simple parsing logic (mock)
     const text = pastedText.toLowerCase();
-    
-    // Try to extract service name and set icon
-    if (text.includes('netflix')) {
-      setServiceName('Netflix');
-      setSelectedIcon(iconOptions[0]);
-    } else if (text.includes('spotify')) {
-      setServiceName('Spotify');
-      setSelectedIcon(iconOptions[1]);
-    } else if (text.includes('disney')) {
-      setServiceName('Disney+');
-      setSelectedIcon(iconOptions[2]);
-    } else if (text.includes('youtube')) {
-      setServiceName('YouTube Premium');
-      setSelectedIcon(iconOptions[3]);
-    } else if (text.includes('amazon')) {
-      setServiceName('Amazon Prime');
-    } else {
-      setServiceName('Unknown Service');
-    }
+    let parsedServiceName = '';
+    let parsedCategory = category;
+    let parsedMonthlyCost = monthlyCost;
+    let parsedCurrency = currency;
+    let parsedBillingCycle: 'daily' | 'weekly' | 'monthly' | 'yearly' = 'monthly';
+    let parsedNextBillDate = nextBillDate;
+    let parsedIsTrial = false;
+    let parsedNotes = notes;
+    let parsedIcon = selectedIcon;
 
-    // Try to extract amount
-    const amountMatch = text.match(/\d+/);
-    if (amountMatch) {
-      setMonthlyCost(amountMatch[0]);
-    }
-
-    // Try to extract date (e.g., "3 jun", "june 3", "3 june 2026")
-    const datePatterns = [
-      /(\d{1,2})\s*(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i,
-      /(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s*(\d{1,2})/i,
-      /(\d{4})-(\d{2})-(\d{2})/,
-    ];
-
-    const monthMap: { [key: string]: string } = {
-      jan: '01', feb: '02', mar: '03', apr: '04', may: '05', jun: '06',
-      jul: '07', aug: '08', sep: '09', oct: '10', nov: '11', dec: '12',
+    const pickIconForText = (value: string) => {
+      const lower = value.toLowerCase();
+      if (lower.includes('netflix')) return iconOptions[0];
+      if (lower.includes('spotify')) return iconOptions[1];
+      if (lower.includes('disney')) return iconOptions[2];
+      if (lower.includes('youtube')) return iconOptions[3];
+      if (lower.includes('adobe')) return iconOptions[4];
+      if (lower.includes('notion')) return iconOptions[5];
+      return null;
     };
 
-    for (const pattern of datePatterns) {
-      const match = text.match(pattern);
-      if (match) {
-        if (match[0].includes('-')) {
-          // Already in YYYY-MM-DD format
-          setNextBillDate(match[0]);
-        } else {
-          // Convert "3 jun" or "jun 3" to date
-          const day = match[1].match(/\d+/) ? match[1] : match[2];
-          const monthText = match[1].match(/[a-z]+/i) ? match[1] : match[2];
-          const month = monthMap[monthText.substring(0, 3).toLowerCase()];
-          const year = '2026'; // default to current year
-          const formattedDay = day.padStart(2, '0');
-          setNextBillDate(`${year}-${month}-${formattedDay}`);
-        }
-        break;
+    const normalizeServiceName = (value: string): string => {
+      const lower = value.toLowerCase();
+      if (lower.includes('netflix')) return 'Netflix';
+      if (lower.includes('spotify')) return 'Spotify';
+      if (lower.includes('disney')) return 'Disney+';
+      if (lower.includes('youtube')) return 'YouTube Premium';
+      if (lower.includes('amazon')) return 'Amazon Prime';
+      return value.trim();
+    };
+
+    const parseAmountAndCurrency = (value: string): { amount?: string; currency?: string } => {
+      const upper = value.toUpperCase();
+      let detectedCurrency: string | undefined;
+
+      if (upper.includes('THB') || value.includes('฿')) detectedCurrency = 'THB';
+      else if (upper.includes('USD') || value.includes('$')) detectedCurrency = 'USD';
+      else if (upper.includes('EUR') || value.includes('€')) detectedCurrency = 'EUR';
+      else if (upper.includes('GBP') || value.includes('£')) detectedCurrency = 'GBP';
+
+      const amountMatch = value.match(/(\d+(?:[.,]\d{1,2})?)/);
+      return {
+        amount: amountMatch?.[1] ? amountMatch[1].replace(',', '.') : undefined,
+        currency: detectedCurrency,
+      };
+    };
+
+    const productLine = pastedText.match(/product\s*:\s*([^\n\r]+)/i)?.[1]?.trim();
+    if (productLine) {
+      parsedServiceName = normalizeServiceName(productLine);
+      parsedIcon = pickIconForText(parsedServiceName) || parsedIcon;
+    }
+
+    // Parse labeled plan line if present (e.g., "Plan: Premium Monthly Plan")
+    const planLineMatch = pastedText.match(/plan\s*:\s*([^\n\r]+)/i);
+    if (planLineMatch?.[1]) {
+      const planText = planLineMatch[1].trim();
+      if (!parsedServiceName) {
+        parsedServiceName = normalizeServiceName(planText);
+        parsedIcon = pickIconForText(parsedServiceName) || parsedIcon;
+      }
+
+      const planLower = planText.toLowerCase();
+      if (planLower.includes('year')) parsedBillingCycle = 'yearly';
+      else if (planLower.includes('week')) parsedBillingCycle = 'weekly';
+      else if (planLower.includes('day')) parsedBillingCycle = 'daily';
+      else parsedBillingCycle = 'monthly';
+    }
+
+    // Fallback service detection from content if no labeled plan
+    if (!parsedServiceName) {
+      if (text.includes('netflix')) parsedServiceName = 'Netflix';
+      else if (text.includes('spotify')) parsedServiceName = 'Spotify';
+      else if (text.includes('disney')) parsedServiceName = 'Disney+';
+      else if (text.includes('youtube')) parsedServiceName = 'YouTube Premium';
+      else if (text.includes('amazon')) parsedServiceName = 'Amazon Prime';
+
+      if (!parsedIcon) {
+        parsedIcon = pickIconForText(parsedServiceName || text) || parsedIcon;
       }
     }
 
+    // Try to extract real currency amount only (ignore card digits and dates)
+    const billingAmountLine = pastedText.match(/billing\s*amount\s*:\s*([^\n\r]+)/i)?.[1]?.trim();
+    if (billingAmountLine) {
+      const parsedAmount = parseAmountAndCurrency(billingAmountLine);
+      if (parsedAmount.amount) {
+        parsedMonthlyCost = parsedAmount.amount;
+      }
+      if (parsedAmount.currency) {
+        parsedCurrency = parsedAmount.currency;
+      }
+    }
+
+    if (!parsedMonthlyCost) {
+      const amountMatch = pastedText.match(/(?:amount|price|cost|total|paid)?[^\n\r]*(?:\$|฿|€|£)\s*(\d+(?:[.,]\d{1,2})?)/i);
+      if (amountMatch?.[1]) {
+        parsedMonthlyCost = amountMatch[1].replace(',', '.');
+      }
+    }
+
+    // Parse explicit renewal/start labels first, then fallback to generic date in text
+    const renewalLine = pastedText.match(/renewal\s*date\s*:\s*([^\n\r]+)/i)?.[1]?.trim();
+    const startLine = pastedText.match(/start\s*date\s*:\s*([^\n\r]+)/i)?.[1]?.trim();
+
+    const parsedRenewal = renewalLine ? formatDateToYmd(renewalLine) : null;
+    const parsedStart = startLine ? formatDateToYmd(startLine) : null;
+
+    if (parsedRenewal) {
+      parsedNextBillDate = parsedRenewal;
+    } else if (parsedStart) {
+      parsedNextBillDate = parsedStart;
+    } else {
+      const fallbackDate = pastedText.match(/\b([A-Za-z]+\s+\d{1,2},\s*\d{4}|\d{4}-\d{2}-\d{2})\b/);
+      if (fallbackDate?.[1]) {
+        const parsedFallback = formatDateToYmd(fallbackDate[1]);
+        if (parsedFallback) {
+          parsedNextBillDate = parsedFallback;
+        }
+      }
+    }
+
+    // Optional notes from payment method line
+    const paymentMethodLine = pastedText.match(/payment\s*method\s*:\s*([^\n\r]+)/i)?.[1]?.trim();
+    if (paymentMethodLine) {
+      parsedNotes = `Payment Method: ${paymentMethodLine}`;
+    }
+
+    // Infer category from text/plan
+    const categorySource = `${parsedServiceName} ${text}`.toLowerCase();
+    if (categorySource.includes('music') || categorySource.includes('spotify')) parsedCategory = 'Music';
+    else if (categorySource.includes('productivity') || categorySource.includes('adobe') || categorySource.includes('notion')) parsedCategory = 'Productivity';
+    else if (categorySource.includes('cloud')) parsedCategory = 'Cloud';
+    else if (categorySource.includes('fitness')) parsedCategory = 'Fitness';
+    else parsedCategory = parsedCategory || 'Entertainment';
+
     // Detect keywords for trial or expiry
     if (text.includes('trial') || text.includes('free')) {
-      setIsTrial(true);
+      parsedIsTrial = true;
     }
     if (text.includes('expire') || text.includes('expiry') || text.includes('end')) {
-      setIsTrial(true);
+      parsedIsTrial = true;
+    }
+
+    setServiceName(parsedServiceName || serviceName || 'Unknown Service');
+    setCategory(parsedCategory);
+    setMonthlyCost(parsedMonthlyCost);
+    setCurrency(parsedCurrency);
+    setBillingCycle(parsedBillingCycle);
+    setNextBillDate(parsedNextBillDate);
+    setIsTrial(parsedIsTrial);
+    setNotes(parsedNotes);
+    if (parsedIcon) {
+      setSelectedIcon(parsedIcon);
     }
 
     setShowPreview(true);
     Alert.alert('Success', 'Text analyzed! Review details below.');
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    if (isSaving) {
+      return;
+    }
+
     if (!serviceName || !monthlyCost || !nextBillDate) {
       Alert.alert('Error', 'Please fill in all required fields');
       return;
     }
 
-    Alert.alert('Success', 'Subscription added!', [
-      { text: 'OK', onPress: () => navigation.goBack() }
-    ]);
+    if (!user) {
+      Alert.alert('Error', 'You must be logged in to add a subscription');
+      return;
+    }
+
+    const parsedCost = Number(monthlyCost);
+    if (Number.isNaN(parsedCost) || parsedCost < 0) {
+      Alert.alert('Error', 'Monthly cost must be a valid number');
+      return;
+    }
+
+    const parsedNextDate = new Date(nextBillDate);
+    if (Number.isNaN(parsedNextDate.getTime())) {
+      Alert.alert('Error', 'Next bill date must be valid (YYYY-MM-DD)');
+      return;
+    }
+
+    const parsedTrialDate = trialEndDate ? new Date(trialEndDate) : undefined;
+    if (trialEndDate && (!parsedTrialDate || Number.isNaN(parsedTrialDate.getTime()))) {
+      Alert.alert('Error', 'Trial end date must be valid (YYYY-MM-DD)');
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      await addSubscription({
+        userId: user.id,
+        name: serviceName,
+        category,
+        cost: parsedCost,
+        currency,
+        billingCycle: billingCycle as 'daily' | 'weekly' | 'monthly' | 'yearly',
+        nextBillingDate: parsedNextDate,
+        trialEndDate: isTrial ? parsedTrialDate : undefined,
+        status: isTrial ? 'trial' : 'active',
+        source: pastedText.trim() ? 'email' : 'manual',
+        reminderEnabled: true,
+        reminderDays: 3,
+        iconLibrary: selectedIcon?.library,
+        iconName: selectedIcon?.name,
+        iconColor: selectedIcon?.color,
+        notes: notes || undefined,
+      });
+
+      if (Platform.OS === 'web') {
+        globalThis.alert('Subscription added!');
+        navigation.navigate('Dashboard');
+        return;
+      }
+
+      Alert.alert('Success', 'Subscription added!', [
+        {
+          text: 'OK',
+          onPress: () =>
+            navigation.reset({
+              index: 0,
+              routes: [{ name: 'Dashboard' }],
+            }),
+        }
+      ]);
+    } catch (error) {
+      console.error('Failed to add subscription:', error);
+      Alert.alert('Error', error instanceof Error ? error.message : 'Failed to add subscription');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleBack = () => {
@@ -300,7 +504,7 @@ export function AddSubscriptionScreen({ navigation }: any) {
                 onChangeText={setNotes}
               />
 
-              <Button onPress={handleSubmit}>
+              <Button onPress={handleSubmit} loading={isSaving}>
                 Save Subscription
               </Button>
             </View>
