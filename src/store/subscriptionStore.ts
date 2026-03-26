@@ -6,7 +6,7 @@
 import { create } from 'zustand';
 import { Subscription } from '@models/Subscription';
 import { apiDelete, apiGet, apiPatch, apiPost } from '@services/backendApi';
-import { auth } from '@services/firebaseClient';
+import { auth } from '@services/authClient';
 
 interface SubscriptionState {
   subscriptions: Subscription[];

@@ -1,4 +1,3 @@
-// Map Firebase Auth error codes to user-friendly messages
 function mapAuthError(error: any): string {
   if (!error || typeof error !== 'object') return 'An unknown error occurred.';
   const code = error.code || error.message || '';
@@ -24,7 +23,7 @@ function mapAuthError(error: any): string {
 import { create } from 'zustand';
 import { User } from '@models/User';
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth, loginWithEmail, logoutFirebase, registerWithEmail } from '@services/firebaseClient';
+import { auth, loginWithEmail, logoutAuth, registerWithEmail } from '@services/authClient';
 
 interface AuthState {
   user: User | null;
@@ -39,12 +38,12 @@ interface AuthState {
   clearError: () => void;
 }
 
-const mapFirebaseUserToUser = (firebaseUser: import('firebase/auth').User): User => ({
-  id: firebaseUser.uid,
-  email: firebaseUser.email || '',
-  displayName: firebaseUser.displayName || (firebaseUser.email ? firebaseUser.email.split('@')[0] : 'User'),
-  createdAt: firebaseUser.metadata.creationTime
-    ? new Date(firebaseUser.metadata.creationTime)
+const mapAuthUserToUser = (authUser: import('firebase/auth').User): User => ({
+  id: authUser.uid,
+  email: authUser.email || '',
+  displayName: authUser.displayName || (authUser.email ? authUser.email.split('@')[0] : 'User'),
+  createdAt: authUser.metadata.creationTime
+    ? new Date(authUser.metadata.creationTime)
     : new Date(),
 });
 
@@ -58,8 +57,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   login: async (email, password) => {
     set({ isLoading: true, error: null });
     try {
-      const firebaseUser = await loginWithEmail(email, password);
-      set({ user: mapFirebaseUserToUser(firebaseUser), isLoading: false });
+      const authUser = await loginWithEmail(email, password);
+      set({ user: mapAuthUserToUser(authUser), isLoading: false });
     } catch (error) {
       const message = mapAuthError(error);
       set({ 
@@ -73,8 +72,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   register: async (email, password, displayName) => {
     set({ isLoading: true, error: null });
     try {
-      const firebaseUser = await registerWithEmail(email, password, displayName);
-      set({ user: mapFirebaseUserToUser(firebaseUser), isLoading: false });
+      const authUser = await registerWithEmail(email, password, displayName);
+      set({ user: mapAuthUserToUser(authUser), isLoading: false });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Registration failed';
       set({ 
@@ -88,7 +87,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   logout: async () => {
     set({ isLoading: true, error: null });
     try {
-      await logoutFirebase();
+      await logoutAuth();
       set({ user: null, isLoading: false });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Logout failed';
@@ -105,7 +104,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
 onAuthStateChanged(auth, (firebaseUser) => {
   useAuthStore.setState({
-    user: firebaseUser ? mapFirebaseUserToUser(firebaseUser) : null,
+    user: firebaseUser ? mapAuthUserToUser(firebaseUser) : null,
     isLoading: false,
   });
 });

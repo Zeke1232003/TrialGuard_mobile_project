@@ -38,12 +38,12 @@ export async function registerWithEmail(
   return credential.user;
 }
 
-export async function logoutFirebase(): Promise<void> {
+export async function logoutAuth(): Promise<void> {
   await signOut(auth);
 }
 
 export async function getAuthToken(): Promise<string> {
-  const currentUser = auth.currentUser;
+  const { currentUser } = auth;
   if (!currentUser) {
     throw new Error('No authenticated user');
   }

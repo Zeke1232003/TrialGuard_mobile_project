@@ -1,0 +1,28 @@
+{
+  "users": {
+    "user_yemyatmin192_gmail_com": [
+      {
+        "id": "sub_u4x8yefa",
+        "userId": "user_yemyatmin192_gmail_com",
+        "name": "Netflix",
+        "cost": 299,
+        "category": "Entertainment",
+        "currency": "THB",
+        "billingCycle": "monthly",
+        "nextBillingDate": "2026-04-01T00:00:00.000Z",
+        "trialEndDate": null,
+        "status": "active",
+        "source": "manual",
+        "reminderEnabled": true,
+        "reminderDays": 3,
+        "iconUrl": null,
+        "iconLibrary": null,
+        "iconName": null,
+        "iconColor": null,
+        "notes": null,
+        "createdAt": "2026-03-26T16:25:12.622Z",
+        "updatedAt": "2026-03-26T16:25:12.622Z"
+      }
+    ]
+  }
+}

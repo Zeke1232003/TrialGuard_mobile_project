@@ -2,5 +2,5 @@
  * Central export for all services
  */
 
-export * from './firebaseClient';
+export * from './authClient';
 export * from './backendApi';

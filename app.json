@@ -15,14 +15,6 @@
     "android": {
       "package": "com.trialguard.app"
     },
-    "web": {
-      "build": {
-        "babel": {
-          "include": [
-            "firebase"
-          ]
-        }
-      }
-    }
+    "web": {}
   }
 }

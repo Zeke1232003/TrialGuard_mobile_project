@@ -8,7 +8,7 @@ config.resolver.sourceExts = [...config.resolver.sourceExts, "mjs", "cjs"];
 config.resolver.unstable_enablePackageExports = false;
 config.resolver.unstable_conditionNames = ['browser', 'require', 'react-native'];
 
-// Handle Firebase and other packages with import.meta
+// Handle packages using import.meta
 config.transformer = {
   ...config.transformer,
   getTransformOptions: async () => ({
