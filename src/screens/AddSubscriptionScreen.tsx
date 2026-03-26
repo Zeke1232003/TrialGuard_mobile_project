@@ -327,6 +327,8 @@ export function AddSubscriptionScreen({ navigation }: any) {
             }),
         }
       ]);
+    navigation.navigate('Dashboard');
+
     } catch (error) {
       console.error('Failed to add subscription:', error);
       Alert.alert('Error', error instanceof Error ? error.message : 'Failed to add subscription');
