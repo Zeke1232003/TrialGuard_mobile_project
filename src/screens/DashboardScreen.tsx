@@ -1,10 +1,12 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { StatCard } from '../components/atoms';
 import { SubscriptionCard, TrialAlertCard } from '../components/molecules';
 import { Button } from '../components/ui';
-import { mockSubscriptions, mockUser } from '../data/mockData';
+import { useAuthStore } from '../store/authStore';
+import { useSubscriptionStore } from '../store/subscriptionStore';
 
 export function DashboardScreen({ navigation }: any) {
   const { subscriptions, fetchSubscriptions, error, clearError } = useSubscriptionStore();

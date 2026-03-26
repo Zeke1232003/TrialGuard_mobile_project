@@ -1,12 +1,17 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Card } from '../components/ui';
-import { mockSubscriptions } from '../data/mockData';
+import { useSubscriptionStore } from '../store/subscriptionStore';
 
 export function CalendarScreen({ navigation }: any) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const { width } = useWindowDimensions();
+  const { subscriptions, fetchSubscriptions } = useSubscriptionStore();
+
+  useEffect(() => {
+    fetchSubscriptions();
+  }, [fetchSubscriptions]);
 
   const calendarCellSize = useMemo(() => {
     const screenPadding = 32;

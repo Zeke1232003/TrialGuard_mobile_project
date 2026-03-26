@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { Button, Input } from '../components/ui';
+import { useAuthStore } from '../store/authStore';
 
 export function RegisterScreen({ navigation }: any) {
   const { register } = useAuthStore();

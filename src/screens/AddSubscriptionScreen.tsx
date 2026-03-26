@@ -2,10 +2,15 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, TextInput, Alert, Switch, TouchableOpacity, Platform } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Button, Input, Card } from '../components/ui';
+import { useAuthStore } from '../store/authStore';
+import { useSubscriptionStore } from '../store/subscriptionStore';
 
 export function AddSubscriptionScreen({ navigation }: any) {
   const [pastedText, setPastedText] = useState('');
   const [showPreview, setShowPreview] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const { user } = useAuthStore();
+  const { addSubscription } = useSubscriptionStore();
 
   // Form state
   const [serviceName, setServiceName] = useState('');

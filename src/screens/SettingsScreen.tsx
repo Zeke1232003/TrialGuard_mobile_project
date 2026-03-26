@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, Switch, TouchableOpacity, Alert, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Card, Button } from '../components/ui';
-import { mockUser } from '../data/mockData';
+import { useAuthStore } from '../store/authStore';
 
 export function SettingsScreen({ navigation }: any) {
   const { user, logout } = useAuthStore();
@@ -40,17 +40,7 @@ export function SettingsScreen({ navigation }: any) {
           text: 'Logout',
           style: 'destructive',
           onPress: () => {
-            navigation.dispatch(
-              CommonActions.reset({
-                index: 0,
-                routes: [{
-                  name: 'Auth',
-                  state: {
-                    routes: [{ name: 'Login' }],
-                  },
-                }],
-              })
-            );
+            void doLogout();
           },
         },
       ]
@@ -81,17 +71,9 @@ export function SettingsScreen({ navigation }: any) {
             Alert.alert('Account Deleted', 'Your account has been deleted.', [
               { 
                 text: 'OK', 
-                onPress: () => navigation.dispatch(
-                  CommonActions.reset({
-                    index: 0,
-                    routes: [{
-                      name: 'Auth',
-                      state: {
-                        routes: [{ name: 'Login' }],
-                      },
-                    }],
-                  })
-                )
+                onPress: () => {
+                  void doLogout();
+                }
               }
             ]);
           },

@@ -1,3 +1,21 @@
+// Map Firebase Auth error codes to user-friendly messages
+function mapAuthError(error: any): string {
+  if (!error || typeof error !== 'object') return 'An unknown error occurred.';
+  const code = error.code || error.message || '';
+  if (
+    code.includes('auth/invalid-credential') ||
+    code.includes('auth/invalid-email') ||
+    code.includes('auth/user-not-found') ||
+    code.includes('auth/wrong-password') ||
+    code.includes('INVALID_LOGIN_CREDENTIALS')
+  ) {
+    return 'Check your email and password';
+  }
+  if (code.includes('auth/too-many-requests')) {
+    return 'Too many attempts. Please try again later.';
+  }
+  return 'Login failed. Please try again.';
+}
 /**
  * Authentication store using Zustand
  * Manages user authentication state
@@ -43,7 +61,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       const firebaseUser = await loginWithEmail(email, password);
       set({ user: mapFirebaseUserToUser(firebaseUser), isLoading: false });
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Login failed';
+      const message = mapAuthError(error);
       set({ 
         error: message,
         isLoading: false 

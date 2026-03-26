@@ -12,7 +12,7 @@ import {
   SubscriptionDetailScreen,
   CalendarScreen,
   SettingsScreen,
-} from '../screens';
+} from '../../screens';
 
 const Stack = createNativeStackNavigator();
 

@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { View, Text, ScrollView, Alert } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Button, Badge, Card } from '../components/ui';
-import { mockSubscriptions } from '../data/mockData';
+import { useSubscriptionStore } from '../store/subscriptionStore';
 
 export function SubscriptionDetailScreen({ navigation, route }: any) {
   const { getSubscriptionById, updateSubscription, deleteSubscription, fetchSubscriptions } = useSubscriptionStore();

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { Button, Input } from '../components/ui';
+import { useAuthStore } from '../store/authStore';
 
 export function LoginScreen({ navigation }: any) {
   const { login } = useAuthStore();
@@ -18,13 +19,12 @@ export function LoginScreen({ navigation }: any) {
 
     try {
       await login(email, password);
+      navigation.replace('AppTabs');
     } catch (error) {
       Alert.alert('Login Failed', error instanceof Error ? error.message : 'Unable to login');
     } finally {
       setIsLoading(false);
-      // For demo purposes, accept any login
-      navigation.replace('AppTabs');
-    }, 1000);
+    }
   };
 
   return (
@@ -37,7 +37,6 @@ export function LoginScreen({ navigation }: any) {
         contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 16 }}
       >
         <View className="w-full max-w-sm mx-auto">
-          {/* App Logo */}
           <View className="items-center mb-8">
             <View className="w-16 h-16 bg-[#4FD1C5] rounded-2xl items-center justify-center mb-4 shadow-lg">
               <Text className="text-white text-3xl">🛡️</Text>
@@ -46,7 +45,6 @@ export function LoginScreen({ navigation }: any) {
             <Text className="text-gray-600 mt-2 text-sm">Never forget subscriptions</Text>
           </View>
 
-          {/* Auth Form */}
           <View className="bg-white rounded-3xl p-6 shadow-xl">
             <Text className="text-xl font-bold text-gray-900 mb-6 text-center">
               Welcome Back
@@ -92,7 +90,6 @@ export function LoginScreen({ navigation }: any) {
               </Text>
             </View>
 
-            {/* Demo Credentials */}
             <View className="mt-6 p-3 bg-teal-50 rounded-xl border border-teal-200">
               <Text className="text-xs text-gray-600 mb-1 font-medium">Demo Account:</Text>
               <Text className="text-xs text-gray-700">📧 demo@student.com</Text>
