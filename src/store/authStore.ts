@@ -13,6 +13,15 @@ function mapAuthError(error: any): string {
   if (code.includes('auth/too-many-requests')) {
     return 'Too many attempts. Please try again later.';
   }
+  if (code.includes('auth/operation-not-allowed')) {
+    return 'Email/Password sign-in is disabled in Firebase Console.';
+  }
+  if (code.includes('auth/invalid-api-key')) {
+    return 'Invalid Firebase API key in current web bundle. Clear cache and redeploy.';
+  }
+  if (code.includes('auth/network-request-failed')) {
+    return 'Network error. Check your internet and try again.';
+  }
   return 'Login failed. Please try again.';
 }
 /**
