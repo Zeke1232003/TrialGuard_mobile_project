@@ -12,6 +12,10 @@ import {
   updateSubscriptionInFirestore,
 } from '@services/firestoreClient';
 import { auth } from '@services/authClient';
+import {
+  syncDailySummaryNotificationAsync,
+} from '@services/notificationService';
+import { useReminderSettingsStore } from './reminderSettingsStore';
 
 interface SubscriptionState {
   subscriptions: Subscription[];
@@ -24,6 +28,7 @@ interface SubscriptionState {
   updateSubscription: (id: string, updates: Partial<Subscription>) => Promise<void>;
   deleteSubscription: (id: string) => Promise<void>;
   getSubscriptionById: (id: string) => Subscription | undefined;
+  syncSummaryNotification: (subscriptions: Subscription[]) => void;
   clearError: () => void;
 }
 
@@ -31,6 +36,18 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
   subscriptions: [],
   isLoading: false,
   error: null,
+
+  syncSummaryNotification: (subscriptions: Subscription[]) => {
+    const settings = useReminderSettingsStore.getState();
+    syncDailySummaryNotificationAsync(subscriptions, {
+      enabled: settings.dailySummaryEnabled,
+      alarmModeEnabled: settings.alarmModeEnabled,
+      hour: settings.reminderHour,
+      minute: settings.reminderMinute,
+    }).catch((notificationError) => {
+      console.warn('Failed to sync daily summary notification', notificationError);
+    });
+  },
 
   fetchSubscriptions: async () => {
     set({ isLoading: true, error: null });
@@ -42,6 +59,8 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
 
       const data = await fetchSubscriptionsFromFirestore();
       set({ subscriptions: data, isLoading: false });
+
+      get().syncSummaryNotification(data);
     } catch (error) {
       set({
         error: error instanceof Error ? error.message : 'Failed to fetch subscriptions',
@@ -59,6 +78,8 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
         subscriptions: [created, ...state.subscriptions],
         isLoading: false,
       }));
+
+      get().syncSummaryNotification([created, ...get().subscriptions.filter((sub) => sub.id !== created.id)]);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to add subscription';
       set({ 
@@ -74,12 +95,19 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
     try {
       await updateSubscriptionInFirestore(id, updates);
 
+      let nextSubscriptions: Subscription[] = [];
+
       set((state) => ({
-        subscriptions: state.subscriptions.map((sub) =>
-          sub.id === id ? { ...sub, ...updates, updatedAt: new Date() } : sub
-        ),
+        subscriptions: (() => {
+          nextSubscriptions = state.subscriptions.map((sub) =>
+            sub.id === id ? { ...sub, ...updates, updatedAt: new Date() } : sub
+          );
+          return nextSubscriptions;
+        })(),
         isLoading: false,
       }));
+
+      get().syncSummaryNotification(nextSubscriptions);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to update subscription';
       set({ 
@@ -95,10 +123,16 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
     try {
       await deleteSubscriptionFromFirestore(id);
 
+      let nextSubscriptions: Subscription[] = [];
       set((state) => ({
-        subscriptions: state.subscriptions.filter((sub) => sub.id !== id),
+        subscriptions: (() => {
+          nextSubscriptions = state.subscriptions.filter((sub) => sub.id !== id);
+          return nextSubscriptions;
+        })(),
         isLoading: false,
       }));
+
+      get().syncSummaryNotification(nextSubscriptions);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to delete subscription';
       set({ 

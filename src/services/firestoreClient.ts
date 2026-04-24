@@ -177,3 +177,22 @@ export async function deleteSubscriptionFromFirestore(id: string): Promise<void>
   const ref = doc(subscriptionsRef, id);
   await deleteDoc(ref);
 }
+
+export async function deleteAllCurrentUserDataFromFirestore(): Promise<void> {
+  const uid = auth.currentUser?.uid;
+  if (!uid) {
+    throw new Error('Please log in first.');
+  }
+
+  const subscriptionsRef = collection(db, 'users', uid, 'subscriptions');
+  const snapshot = await getDocs(subscriptionsRef);
+
+  if (!snapshot.empty) {
+    await Promise.all(snapshot.docs.map((subscriptionDoc) => deleteDoc(subscriptionDoc.ref)));
+  }
+
+  const userDocRef = doc(db, 'users', uid);
+  await deleteDoc(userDocRef).catch(() => {
+    // Ignore missing profile document; subscriptions deletion is the critical part.
+  });
+}

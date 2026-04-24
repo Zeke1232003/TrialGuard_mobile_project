@@ -5,3 +5,4 @@
 export * from './authClient';
 export * from './backendApi';
 export * from './firestoreClient';
+export * from './notificationService';

@@ -3,22 +3,89 @@ import { View, Text, ScrollView, Switch, TouchableOpacity, Alert, Platform } fro
 import { Ionicons } from '@expo/vector-icons';
 import { Card, Button } from '../components/ui';
 import { useAuthStore } from '../store/authStore';
+import { useReminderSettingsStore } from '../store/reminderSettingsStore';
+import { useSubscriptionStore } from '../store/subscriptionStore';
+import { scheduleTestNotificationAsync } from '../services/notificationService';
+import { deleteAllCurrentUserDataFromFirestore } from '../services/firestoreClient';
+import { deleteCurrentUserAuth } from '../services/authClient';
+
+const reminderTimeOptions = [
+  { label: '08:00 AM', hour: 8, minute: 0 },
+  { label: '09:00 AM', hour: 9, minute: 0 },
+  { label: '06:00 PM', hour: 18, minute: 0 },
+  { label: '08:00 PM', hour: 20, minute: 0 },
+];
+
+function formatReminderTime(hour: number, minute: number): string {
+  const period = hour >= 12 ? 'PM' : 'AM';
+  const hour12 = hour % 12 === 0 ? 12 : hour % 12;
+  const minuteText = String(minute).padStart(2, '0');
+  return `${String(hour12).padStart(2, '0')}:${minuteText} ${period}`;
+}
 
 export function SettingsScreen({ navigation }: any) {
   const { user, logout } = useAuthStore();
+  const { subscriptions, syncSummaryNotification } = useSubscriptionStore();
+  const {
+    dailySummaryEnabled,
+    alarmModeEnabled,
+    reminderHour,
+    reminderMinute,
+    setDailySummaryEnabled,
+    setAlarmModeEnabled,
+    setReminderTime,
+  } = useReminderSettingsStore();
   const [currency, setCurrency] = useState<'THB' | 'USD'>('THB');
-  const [notifications, setNotifications] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
   const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
+  const [showReminderTimePicker, setShowReminderTimePicker] = useState(false);
 
   const displayName = user?.displayName || 'User';
   const email = user?.email || 'No email';
 
+  const navigateToLogin = () => {
+    const rootNavigation = navigation?.getParent?.()?.getParent?.() ?? navigation?.getParent?.() ?? navigation;
+    rootNavigation.reset({
+      index: 0,
+      routes: [{ name: 'AuthStack', params: { screen: 'Login' } }],
+    });
+  };
+
   const doLogout = async () => {
     try {
       await logout();
+      navigateToLogin();
     } catch (error) {
       Alert.alert('Error', error instanceof Error ? error.message : 'Logout failed');
+    }
+  };
+
+  const doDeleteAccount = async () => {
+    try {
+      await deleteAllCurrentUserDataFromFirestore();
+      await deleteCurrentUserAuth();
+
+      navigateToLogin();
+
+      if (Platform.OS === 'web') {
+        globalThis.alert('Account deleted permanently.');
+        return;
+      }
+
+      Alert.alert('Account Deleted', 'Your account and data were deleted permanently.');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to delete account';
+      const lower = message.toLowerCase();
+
+      if (lower.includes('requires-recent-login') || lower.includes('auth/requires-recent-login')) {
+        Alert.alert(
+          'Re-login Required',
+          'For security, please log out, log in again, and then try deleting your account.'
+        );
+        return;
+      }
+
+      Alert.alert('Delete Account Failed', message);
     }
   };
 
@@ -53,8 +120,7 @@ export function SettingsScreen({ navigation }: any) {
         'This will permanently delete your account and all data. This action cannot be undone.'
       );
       if (confirmed) {
-        globalThis.alert('Account Deleted');
-        void doLogout();
+        void doDeleteAccount();
       }
       return;
     }
@@ -68,17 +134,67 @@ export function SettingsScreen({ navigation }: any) {
           text: 'Delete',
           style: 'destructive',
           onPress: () => {
-            Alert.alert('Account Deleted', 'Your account has been deleted.', [
-              { 
-                text: 'OK', 
-                onPress: () => {
-                  void doLogout();
-                }
-              }
-            ]);
+            void doDeleteAccount();
           },
         },
       ]
+    );
+  };
+
+  const handleToggleDailySummary = (enabled: boolean) => {
+    setDailySummaryEnabled(enabled);
+    syncSummaryNotification(subscriptions);
+  };
+
+  const handleSelectReminderTime = (hour: number, minute: number) => {
+    setReminderTime(hour, minute);
+    setShowReminderTimePicker(false);
+    syncSummaryNotification(subscriptions);
+  };
+
+  const handleToggleAlarmMode = (enabled: boolean) => {
+    setAlarmModeEnabled(enabled);
+    syncSummaryNotification(subscriptions);
+  };
+
+  const handleSendTestNotification = async () => {
+    const result = await scheduleTestNotificationAsync(10, alarmModeEnabled);
+
+    if (result !== 'scheduled') {
+      if (result === 'unsupported_expo_go_android') {
+        Alert.alert(
+          'Not Supported In Expo Go',
+          'Android Expo Go does not support this notification feature. Use a development build (EAS dev client) to test alarms.'
+        );
+        return;
+      }
+
+      if (result === 'unsupported_web') {
+        Alert.alert(
+          'Not Supported On Web',
+          'Local phone notifications cannot run on Firebase hosting/web. Use Android or iOS native app runtime.'
+        );
+        return;
+      }
+
+      if (result === 'module_unavailable') {
+        Alert.alert(
+          'Notification Module Unavailable',
+          'The notifications module is unavailable in this runtime. Restart app and test with a native development build.'
+        );
+        return;
+      }
+
+      Alert.alert(
+        'Test Notification Failed',
+        'Enable app notifications in phone settings and try again.'
+      );
+      return;
+    }
+
+    Alert.alert(
+      'Test Scheduled',
+      'A test notification will appear in about 10 seconds. Lock your screen to verify it.'
     );
   };
 
@@ -160,20 +276,68 @@ export function SettingsScreen({ navigation }: any) {
               />
             </View>
 
-            {/* Notifications Toggle */}
-            <View className="flex-row items-center justify-between py-3">
+            {/* Daily Summary Toggle */}
+            <View className="flex-row items-center justify-between py-3 border-b border-gray-100">
               <View className="flex-1">
-                <Text className="font-medium text-gray-900">Push Notifications</Text>
+                <Text className="font-medium text-gray-900">Daily Summary Notifications</Text>
                 <Text className="text-sm text-gray-600 mt-1">
-                  Get notified about upcoming bills
+                  One notification each day about subscriptions expiring soon
                 </Text>
               </View>
               <Switch
-                value={notifications}
-                onValueChange={setNotifications}
+                value={dailySummaryEnabled}
+                onValueChange={handleToggleDailySummary}
                 trackColor={{ true: '#4FD1C5', false: '#d1d5db' }}
               />
             </View>
+
+            {/* Alarm Mode Toggle */}
+            <View className="flex-row items-center justify-between py-3 border-b border-gray-100">
+              <View className="flex-1">
+                <Text className="font-medium text-gray-900">Alarm Mode</Text>
+                <Text className="text-sm text-gray-600 mt-1">
+                  ON uses alarm-style alerts. OFF uses normal notifications.
+                </Text>
+              </View>
+              <Switch
+                value={alarmModeEnabled}
+                onValueChange={handleToggleAlarmMode}
+                trackColor={{ true: '#4FD1C5', false: '#d1d5db' }}
+              />
+            </View>
+
+            {/* Reminder Time */}
+            <TouchableOpacity
+              onPress={() => setShowReminderTimePicker(!showReminderTimePicker)}
+              className="py-3"
+            >
+              <Text className="text-sm text-gray-600 mb-2">Daily Reminder Time</Text>
+              <View className="flex-row items-center justify-between">
+                <Text className="text-base text-gray-900 font-medium">
+                  {formatReminderTime(reminderHour, reminderMinute)}
+                </Text>
+                <Text className="text-gray-400">{showReminderTimePicker ? '▲' : '▼'}</Text>
+              </View>
+            </TouchableOpacity>
+
+            {showReminderTimePicker && (
+              <View>
+                {reminderTimeOptions.map((option) => {
+                  const selected = option.hour === reminderHour && option.minute === reminderMinute;
+                  return (
+                    <TouchableOpacity
+                      key={option.label}
+                      onPress={() => handleSelectReminderTime(option.hour, option.minute)}
+                      className={`py-3 px-4 ${selected ? 'bg-teal-50' : ''}`}
+                    >
+                      <Text className={`${selected ? 'text-[#4FD1C5] font-semibold' : 'text-gray-700'}`}>
+                        {option.label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            )}
           </Card>
         </View>
 
@@ -201,6 +365,10 @@ export function SettingsScreen({ navigation }: any) {
 
         {/* Actions */}
         <View className="gap-3">
+          <Button variant="outline" onPress={handleSendTestNotification}>
+            {alarmModeEnabled ? 'Send Test Alarm (10s)' : 'Send Test Notification (10s)'}
+          </Button>
+
           <Button variant="secondary" onPress={handleLogout}>
             Logout
           </Button>

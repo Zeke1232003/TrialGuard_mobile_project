@@ -106,6 +106,8 @@ export function AddSubscriptionScreen({ navigation }: any) {
     let parsedIsTrial = false;
     let parsedNotes = notes;
     let parsedIcon = selectedIcon;
+    let usedFallbackDate = false;
+    let usedStartDate = false;
 
     const pickIconForText = (value: string) => {
       const lower = value.toLowerCase();
@@ -115,6 +117,7 @@ export function AddSubscriptionScreen({ navigation }: any) {
       if (lower.includes('youtube')) return iconOptions[3];
       if (lower.includes('adobe')) return iconOptions[4];
       if (lower.includes('notion')) return iconOptions[5];
+      if (lower.includes('openai') || lower.includes('chatgpt')) return iconOptions[9];
       return null;
     };
 
@@ -125,6 +128,7 @@ export function AddSubscriptionScreen({ navigation }: any) {
       if (lower.includes('disney')) return 'Disney+';
       if (lower.includes('youtube')) return 'YouTube Premium';
       if (lower.includes('amazon')) return 'Amazon Prime';
+      if (lower.includes('openai') || lower.includes('chatgpt')) return 'OpenAI';
       return value.trim();
     };
 
@@ -137,9 +141,14 @@ export function AddSubscriptionScreen({ navigation }: any) {
       else if (upper.includes('EUR') || value.includes('€')) detectedCurrency = 'EUR';
       else if (upper.includes('GBP') || value.includes('£')) detectedCurrency = 'GBP';
 
-      const amountMatch = value.match(/(\d+(?:[.,]\d{1,2})?)/);
+      const amountMatch = value.match(/(\d{1,3}(?:[\s,]\d{3})*(?:[.,]\d{1,2})?|\d+(?:[.,]\d{1,2})?)/);
+      const normalizedAmount = amountMatch?.[1]
+        ?.replace(/\s/g, '')
+        ?.replace(/,(?=\d{3}(?:\D|$))/g, '')
+        ?.replace(',', '.');
+
       return {
-        amount: amountMatch?.[1] ? amountMatch[1].replace(',', '.') : undefined,
+        amount: normalizedAmount,
         currency: detectedCurrency,
       };
     };
@@ -173,28 +182,83 @@ export function AddSubscriptionScreen({ navigation }: any) {
       else if (text.includes('disney')) parsedServiceName = 'Disney+';
       else if (text.includes('youtube')) parsedServiceName = 'YouTube Premium';
       else if (text.includes('amazon')) parsedServiceName = 'Amazon Prime';
+      else if (text.includes('openai') || text.includes('chatgpt')) parsedServiceName = 'OpenAI';
 
       if (!parsedIcon) {
         parsedIcon = pickIconForText(parsedServiceName || text) || parsedIcon;
       }
     }
 
-    // Try to extract real currency amount only (ignore card digits and dates)
-    const billingAmountLine = pastedText.match(/billing\s*amount\s*:\s*([^\n\r]+)/i)?.[1]?.trim();
-    if (billingAmountLine) {
-      const parsedAmount = parseAmountAndCurrency(billingAmountLine);
+    const applyAmountFromLine = (line: string) => {
+      const parsedAmount = parseAmountAndCurrency(line);
       if (parsedAmount.amount) {
         parsedMonthlyCost = parsedAmount.amount;
       }
       if (parsedAmount.currency) {
         parsedCurrency = parsedAmount.currency;
       }
+    };
+
+    const amountPriorityPatterns = [
+      /\bgrand\s*total\b\s*:?\s*([^\n\r]+)/i,
+      /\btotal\s*(?:amount|due|charged|paid)?\b\s*:?\s*([^\n\r]+)/i,
+      /\bamount\s*(?:due|charged|paid)\b\s*:?\s*([^\n\r]+)/i,
+      /\byou\s*paid\b\s*:?\s*([^\n\r]+)/i,
+    ];
+
+    // Prefer explicit total-like labels when available.
+    for (const pattern of amountPriorityPatterns) {
+      const line = pastedText.match(pattern)?.[1]?.trim();
+      if (line) {
+        applyAmountFromLine(line);
+        break;
+      }
+    }
+
+    // Try labeled billing amount if total was not found.
+    const billingAmountLine = pastedText.match(/billing\s*amount\s*:\s*([^\n\r]+)/i)?.[1]?.trim();
+    if (!parsedMonthlyCost && billingAmountLine) {
+      applyAmountFromLine(billingAmountLine);
     }
 
     if (!parsedMonthlyCost) {
-      const amountMatch = pastedText.match(/(?:amount|price|cost|total|paid)?[^\n\r]*(?:\$|฿|€|£)\s*(\d+(?:[.,]\d{1,2})?)/i);
-      if (amountMatch?.[1]) {
-        parsedMonthlyCost = amountMatch[1].replace(',', '.');
+      const currencyMatches = [
+        ...pastedText.matchAll(/([$฿€£])\s*(\d{1,3}(?:[\s,]\d{3})*(?:[.,]\d{1,2})?|\d+(?:[.,]\d{1,2})?)/g),
+        ...pastedText.matchAll(/(USD|THB|EUR|GBP)\s*(\d{1,3}(?:[\s,]\d{3})*(?:[.,]\d{1,2})?|\d+(?:[.,]\d{1,2})?)/gi),
+        ...pastedText.matchAll(/(\d{1,3}(?:[\s,]\d{3})*(?:[.,]\d{1,2})?|\d+(?:[.,]\d{1,2})?)\s*(USD|THB|EUR|GBP)\b/gi),
+      ];
+
+      if (currencyMatches.length > 0) {
+        // Choose the largest visible monetary value to avoid picking tax/item subtotal.
+        let bestAmount = -1;
+        let bestRaw = '';
+        let bestCurrency = '';
+
+        for (const match of currencyMatches) {
+          const rawCandidate = (match[2] ?? match[1] ?? '')
+            .replace(/\s/g, '')
+            .replace(/,(?=\d{3}(?:\D|$))/g, '')
+            .replace(',', '.');
+          const raw = rawCandidate;
+          const parsed = Number(raw);
+          if (!Number.isNaN(parsed) && parsed > bestAmount) {
+            bestAmount = parsed;
+            bestRaw = raw;
+
+            const symbolOrCode = (match[1] ?? match[2] ?? '').toUpperCase();
+            if (symbolOrCode === '$' || symbolOrCode === 'USD') bestCurrency = 'USD';
+            else if (symbolOrCode === '฿' || symbolOrCode === 'THB') bestCurrency = 'THB';
+            else if (symbolOrCode === '€' || symbolOrCode === 'EUR') bestCurrency = 'EUR';
+            else if (symbolOrCode === '£' || symbolOrCode === 'GBP') bestCurrency = 'GBP';
+          }
+        }
+
+        if (bestAmount >= 0) {
+          parsedMonthlyCost = bestRaw;
+          if (bestCurrency) {
+            parsedCurrency = bestCurrency;
+          }
+        }
       }
     }
 
@@ -209,13 +273,48 @@ export function AddSubscriptionScreen({ navigation }: any) {
       parsedNextBillDate = parsedRenewal;
     } else if (parsedStart) {
       parsedNextBillDate = parsedStart;
+      usedStartDate = true;
     } else {
       const fallbackDate = pastedText.match(/\b([A-Za-z]+\s+\d{1,2},\s*\d{4}|\d{4}-\d{2}-\d{2})\b/);
       if (fallbackDate?.[1]) {
         const parsedFallback = formatDateToYmd(fallbackDate[1]);
         if (parsedFallback) {
           parsedNextBillDate = parsedFallback;
+          usedFallbackDate = true;
         }
+      }
+    }
+
+    // If we only have an order/start date and renewal wording, compute the next cycle date.
+    const hasAutoRenewText =
+      /automatically\s+renew/i.test(pastedText) ||
+      /auto\s*renew/i.test(pastedText) ||
+      /renews?\s+(monthly|weekly|yearly|annually|daily)/i.test(pastedText);
+
+    const hasOrderDateLabel =
+      /order\s*date\s*:/i.test(pastedText) ||
+      /ordered\s*date\s*:/i.test(pastedText) ||
+      /ordered\s+on\b/i.test(pastedText);
+
+    if ((usedFallbackDate || usedStartDate || hasOrderDateLabel) && hasAutoRenewText && parsedNextBillDate) {
+      const baseDate = new Date(parsedNextBillDate);
+      if (!Number.isNaN(baseDate.getTime())) {
+        const nextDate = new Date(baseDate);
+
+        if (parsedBillingCycle === 'daily') {
+          nextDate.setDate(nextDate.getDate() + 1);
+        } else if (parsedBillingCycle === 'weekly') {
+          nextDate.setDate(nextDate.getDate() + 7);
+        } else if (parsedBillingCycle === 'yearly') {
+          nextDate.setFullYear(nextDate.getFullYear() + 1);
+        } else {
+          nextDate.setMonth(nextDate.getMonth() + 1);
+        }
+
+        const yyyy = nextDate.getFullYear();
+        const mm = String(nextDate.getMonth() + 1).padStart(2, '0');
+        const dd = String(nextDate.getDate()).padStart(2, '0');
+        parsedNextBillDate = `${yyyy}-${mm}-${dd}`;
       }
     }
 

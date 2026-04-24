@@ -1,12 +1,16 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import {
+  Auth,
   getAuth,
+  initializeAuth,
+  deleteUser,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   updateProfile,
   signOut,
   User,
 } from 'firebase/auth';
+import { Platform } from 'react-native';
 
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
@@ -19,7 +23,20 @@ const firebaseConfig = {
 };
 
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
-export const auth = getAuth(app);
+
+function createAuth(): Auth {
+  if (Platform.OS === 'web') {
+    return getAuth(app);
+  }
+
+  try {
+    return initializeAuth(app);
+  } catch {
+    return getAuth(app);
+  }
+}
+
+export const auth = createAuth();
 
 export async function loginWithEmail(email: string, password: string): Promise<User> {
   const credential = await signInWithEmailAndPassword(auth, email, password);
@@ -40,6 +57,15 @@ export async function registerWithEmail(
 
 export async function logoutAuth(): Promise<void> {
   await signOut(auth);
+}
+
+export async function deleteCurrentUserAuth(): Promise<void> {
+  const { currentUser } = auth;
+  if (!currentUser) {
+    throw new Error('No authenticated user');
+  }
+
+  await deleteUser(currentUser);
 }
 
 export async function getAuthToken(): Promise<string> {

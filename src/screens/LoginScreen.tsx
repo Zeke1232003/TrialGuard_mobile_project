@@ -67,6 +67,7 @@ export function LoginScreen({ navigation }: any) {
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry
+                enablePasswordToggle
                 autoCapitalize="none"
               />
 
@@ -90,11 +91,6 @@ export function LoginScreen({ navigation }: any) {
               </Text>
             </View>
 
-            <View className="mt-6 p-3 bg-teal-50 rounded-xl border border-teal-200">
-              <Text className="text-xs text-gray-600 mb-1 font-medium">Demo Account:</Text>
-              <Text className="text-xs text-gray-700">📧 demo@student.com</Text>
-              <Text className="text-xs text-gray-700">🔑 demo123</Text>
-            </View>
           </View>
         </View>
       </ScrollView>

@@ -4,6 +4,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigatorScreenParams, useNavigation } from '@react-navigation/native';
 import { TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   LandingScreen,
   LoginScreen,
@@ -49,6 +50,7 @@ function AuthNavigator() {
 
 function AppTabsNavigator() {
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
 
   const handleAddPress = () => {
     navigation.navigate('AddSubscription', { initialTab: 'manual' });
@@ -62,9 +64,9 @@ function AppTabsNavigator() {
           tabBarActiveTintColor: '#4FD1C5',
           tabBarInactiveTintColor: '#9CA3AF',
           tabBarStyle: {
-            height: 64,
+            height: 64 + insets.bottom,
             paddingTop: 6,
-            paddingBottom: 8,
+            paddingBottom: Math.max(insets.bottom, 8),
           },
           tabBarLabelStyle: {
             fontSize: 12,
@@ -93,7 +95,7 @@ function AppTabsNavigator() {
       <TouchableOpacity
         style={{
           position: 'absolute',
-          bottom: 80,
+          bottom: 80 + insets.bottom,
           right: 24,
           width: 56,
           height: 56,
