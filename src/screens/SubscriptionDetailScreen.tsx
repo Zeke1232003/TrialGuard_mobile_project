@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, ScrollView, Alert } from 'react-native';
+import { View, Text, ScrollView, Alert, Platform } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Button, Badge, Card } from '../components/ui';
 import { useSubscriptionStore } from '../store/subscriptionStore';
@@ -33,6 +33,28 @@ export function SubscriptionDetailScreen({ navigation, route }: any) {
   });
 
   const handleDelete = () => {
+    if (Platform.OS === 'web') {
+      const confirmed = globalThis.confirm(`Are you sure you want to delete ${subscription.name}?`);
+      if (!confirmed) {
+        return;
+      }
+
+      void (async () => {
+        try {
+          await deleteSubscription(subscription.id);
+          globalThis.alert('Subscription deleted');
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'AppTabs' }],
+          });
+        } catch {
+          globalThis.alert('Could not delete this subscription. Please try again.');
+        }
+      })();
+
+      return;
+    }
+
     Alert.alert(
       'Delete Subscription',
       `Are you sure you want to delete ${subscription.name}?`,
@@ -42,8 +64,22 @@ export function SubscriptionDetailScreen({ navigation, route }: any) {
           text: 'Delete',
           style: 'destructive',
           onPress: async () => {
-            await deleteSubscription(subscription.id);
-            Alert.alert('Success', 'Subscription deleted', [{ text: 'OK', onPress: () => navigation.goBack() }]);
+            try {
+              await deleteSubscription(subscription.id);
+              Alert.alert('Success', 'Subscription deleted', [
+                {
+                  text: 'OK',
+                  onPress: () => {
+                    navigation.reset({
+                      index: 0,
+                      routes: [{ name: 'AppTabs' }],
+                    });
+                  },
+                },
+              ]);
+            } catch {
+              Alert.alert('Delete Failed', 'Could not delete this subscription. Please try again.');
+            }
           },
         },
       ]

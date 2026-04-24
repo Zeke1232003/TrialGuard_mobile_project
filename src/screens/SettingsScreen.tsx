@@ -24,6 +24,7 @@ function formatReminderTime(hour: number, minute: number): string {
 }
 
 export function SettingsScreen({ navigation }: any) {
+  const isWebRuntime = Platform.OS === 'web';
   const { user, logout } = useAuthStore();
   const { subscriptions, syncSummaryNotification } = useSubscriptionStore();
   const {
@@ -158,6 +159,13 @@ export function SettingsScreen({ navigation }: any) {
   };
 
   const handleSendTestNotification = async () => {
+    if (isWebRuntime) {
+      globalThis.alert(
+        'Test alarms are not available on web. Please use the Android or iOS app runtime to test local notifications.'
+      );
+      return;
+    }
+
     const result = await scheduleTestNotificationAsync(10, alarmModeEnabled);
 
     if (result !== 'scheduled') {
@@ -365,8 +373,16 @@ export function SettingsScreen({ navigation }: any) {
 
         {/* Actions */}
         <View className="gap-3">
-          <Button variant="outline" onPress={handleSendTestNotification}>
-            {alarmModeEnabled ? 'Send Test Alarm (10s)' : 'Send Test Notification (10s)'}
+          {isWebRuntime && (
+            <Text className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+              Test alarms are available only in Android/iOS app runtime.
+            </Text>
+          )}
+
+          <Button variant="outline" onPress={handleSendTestNotification} disabled={isWebRuntime}>
+            {isWebRuntime
+              ? 'Test Alarm Unavailable On Web'
+              : (alarmModeEnabled ? 'Send Test Alarm (10s)' : 'Send Test Notification (10s)')}
           </Button>
 
           <Button variant="secondary" onPress={handleLogout}>
