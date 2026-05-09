@@ -14,7 +14,7 @@ export function StatCard({ title, value, subtitle, icon, variant = 'default' }: 
   if (variant === 'gradient') {
     // Gradient style like in the image
     return (
-      <View className="flex-1 rounded-2xl p-5 shadow-md" style={{ backgroundColor: '#6EE7DC' }}>
+      <View className="flex-1 rounded-2xl p-5 shadow-md" style={{ backgroundColor: '#93C5FD' }}>
         <Text className="text-sm text-gray-700 font-medium mb-2">{title}</Text>
         <Text className="text-3xl font-bold text-gray-900 mb-1">
           {value}

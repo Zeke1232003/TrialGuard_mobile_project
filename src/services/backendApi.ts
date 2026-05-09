@@ -1,6 +1,6 @@
 import { NativeModules, Platform } from 'react-native';
 import Constants from 'expo-constants';
-import { getAuthToken } from './firebaseClient';
+import { getAuthToken } from './authClient';
 
 type HttpMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE';
 

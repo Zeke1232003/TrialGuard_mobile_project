@@ -17,7 +17,7 @@ A React Native mobile application built with Expo to help university students ma
 - **Language**: TypeScript
 - **State Management**: Zustand
 - **Navigation**: React Navigation (Native Stack)
-- **Backend**: Firebase (Auth & Firestore)
+- **Backend**: Express API
 - **Architecture**: Feature-based folder structure
 
 ## 📁 Project Structure
@@ -35,9 +35,9 @@ src/
 ├── models/            # TypeScript interfaces
 │   ├── User.ts
 │   └── Subscription.ts
-├── services/          # Firebase, parsing logic
-│   ├── firebase.ts
-│   └── parsing.ts
+├── services/          # Auth, API, parsing logic
+│   ├── authClient.ts
+│   └── backendApi.ts
 ├── store/             # Zustand stores
 │   ├── authStore.ts
 │   └── subscriptionStore.ts
@@ -68,7 +68,6 @@ src/
 - Node.js (v16 or later)
 - npm or yarn
 - Expo CLI
-- Firebase project (for backend)
 
 ### Installation
 
@@ -78,16 +77,12 @@ src/
    npm install
    ```
 
-2. **Configure Firebase**
-   - Update `src/services/firebase.ts` with your Firebase configuration
-   - Enable Authentication and Firestore in Firebase console
-
-3. **Start development server**
+2. **Start development server**
    ```bash
    npm run start
    ```
 
-4. **Run on device/simulator**
+3. **Run on device/simulator**
    - Install Expo Go app on your phone
    - Scan QR code from terminal
    - Or press 'i' for iOS simulator, 'a' for Android emulator
@@ -103,12 +98,10 @@ src/
 - Theme and design system
 
 🔄 **In Progress**:
-- Firebase integration
 - Subscription parsing logic
 - UI component implementation
 
 📋 **Next Steps**:
-- Implement Firebase authentication
 - Build subscription parsing service
 - Add form validation
 - Implement reminder notifications
@@ -146,7 +139,7 @@ The app follows a clean, modern design with:
 
 ## 📱 Screens
 
-1. **LoginScreen** - Email/Google authentication
+1. **LoginScreen** - Email/password authentication
 2. **RegisterScreen** - Account creation
 3. **HomeScreen** - Dashboard with subscription overview
 4. **AddSubscriptionScreen** - Text parsing and manual entry
@@ -171,6 +164,9 @@ npm run web
 
 # TypeScript check
 npx tsc --noEmit
+
+# Build web output for hosting
+npm run build:web
 ```
 
 ## 📝 Contributing

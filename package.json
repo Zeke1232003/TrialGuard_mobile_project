@@ -4,9 +4,10 @@
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web",
+    "build:web": "expo export --platform web && node ./scripts/copy-static-pages.js",
     "backend:dev": "npm --prefix backend run dev",
     "backend:start": "npm --prefix backend run start"
   },
@@ -18,8 +19,10 @@
     "@react-navigation/native-stack": "^6.9.17",
     "expo": "^54.0.33",
     "expo-constants": "~18.0.13",
+    "expo-dev-client": "~6.0.20",
+    "expo-notifications": "^55.0.14",
     "expo-status-bar": "~3.0.9",
-    "firebase": "^12.10.0",
+    "firebase": "^12.11.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-native": "0.81.5",
@@ -33,6 +36,7 @@
     "@types/react": "~19.1.10",
     "babel-plugin-transform-import-meta": "^2.3.3",
     "babel-preset-expo": "~54.0.10",
+    "eas-cli": "^18.7.0",
     "nativewind": "^4.2.1",
     "tailwindcss": "^3.3.2",
     "typescript": "^5.1.3"

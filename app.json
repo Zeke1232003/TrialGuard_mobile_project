@@ -3,6 +3,7 @@
     "name": "TrialGuard",
     "slug": "trialguard",
     "version": "1.0.0",
+    "icon": "./assets/icon.png",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "assetBundlePatterns": [
@@ -10,18 +11,29 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.trialguard.app"
+      "bundleIdentifier": "com.trialguard2026.app"
     },
     "android": {
-      "package": "com.trialguard.app"
+      "package": "com.mfu.trailgaudv2",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#4FD1C5"
+      }
     },
-    "web": {
-      "build": {
-        "babel": {
-          "include": [
-            "firebase"
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "sounds": [
+            "./assets/sounds/alarm_10s.wav"
           ]
         }
+      ]
+    ],
+    "web": {},
+    "extra": {
+      "eas": {
+        "projectId": "177ea5dc-1873-4b79-a6f5-8e85d670189b"
       }
     }
   }

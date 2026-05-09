@@ -56,7 +56,7 @@ function BottomTabBar({ navigation }: any) {
       {/* Floating Add Button */}
       <TouchableOpacity
         onPress={() => navigation.navigate('AddSubscription')}
-        className="absolute bottom-20 right-6 w-14 h-14 bg-[#4FD1C5] rounded-full items-center justify-center shadow-lg"
+        className="absolute bottom-20 right-6 w-14 h-14 bg-[#3B82F6] rounded-full items-center justify-center shadow-lg"
         style={{ elevation: 8 }}
       >
         <Ionicons name="add" size={32} color="white" />
@@ -76,9 +76,9 @@ function BottomTabBar({ navigation }: any) {
               <Ionicons 
                 name={tab.icon as any} 
                 size={24} 
-                color={isFocused ? '#4FD1C5' : '#9CA3AF'} 
+                color={isFocused ? '#3B82F6' : '#9CA3AF'} 
               />
-              <Text className={`text-xs mt-1 ${isFocused ? 'text-[#4FD1C5] font-semibold' : 'text-gray-600'}`}>
+              <Text className={`text-xs mt-1 ${isFocused ? 'text-[#3B82F6] font-semibold' : 'text-gray-600'}`}>
                 {tab.name}
               </Text>
             </TouchableOpacity>
@@ -138,7 +138,7 @@ export function NewAppNavigator() {
   if (isLoading) {
     return (
       <View className="flex-1 items-center justify-center bg-gray-50">
-        <ActivityIndicator size="large" color="#4FD1C5" />
+        <ActivityIndicator size="large" color="#3B82F6" />
         <Text className="mt-3 text-gray-600">Loading...</Text>
       </View>
     );

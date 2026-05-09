@@ -1,18 +1,17 @@
 # TrialGuard Backend
 
-Express + Firebase Admin backend for TrialGuard.
+Express backend for TrialGuard.
 
 ## Features
-- Verify Firebase ID token (`Authorization: Bearer <token>`)
-- Subscription CRUD APIs (Firestore)
-- Per-user data isolation (`users/{uid}/subscriptions`)
+- Verify local bearer token (`Authorization: Bearer local-token-<uid>`)
+- Subscription CRUD APIs (in-memory)
+- Per-user data isolation by token user id
 
 ## Setup
 1. `cd backend`
 2. `npm install`
 3. Copy `.env.example` to `.env`
-4. Fill Firebase Admin credentials from your service account JSON
-5. Run `npm run dev`
+4. Run `npm run dev`
 
 ## Endpoints
 - `GET /health`
@@ -22,4 +21,4 @@ Express + Firebase Admin backend for TrialGuard.
 - `PATCH /api/subscriptions/:id`
 - `DELETE /api/subscriptions/:id`
 
-All `/api/subscriptions*` routes require Firebase Auth token.
+All `/api/subscriptions*` routes require a bearer token in `local-token-<uid>` format.

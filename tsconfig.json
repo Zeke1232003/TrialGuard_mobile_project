@@ -1,7 +1,7 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "ignoreDeprecations": "5.0",
+    "ignoreDeprecations": "6.0",
     "strict": true,
     "baseUrl": "./",
     "paths": {
@@ -26,8 +26,17 @@
     }
   },
   "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    "nativewind-env.d.ts"
+    "App.tsx",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "nativewind-env.d.ts",
+    "env.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "backend",
+    "android/build",
+    "android/app/build"
   ]
 }

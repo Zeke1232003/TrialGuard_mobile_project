@@ -47,7 +47,7 @@ export function SubscriptionCard({
     
     return (
       <View className="w-12 h-12 bg-gray-100 rounded-full items-center justify-center mr-3">
-        <IconComponent name={iconName as any} size={28} color={iconColor || '#4FD1C5'} />
+        <IconComponent name={iconName as any} size={28} color={iconColor || '#3B82F6'} />
       </View>
     );
   };
