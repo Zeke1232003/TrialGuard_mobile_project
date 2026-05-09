@@ -482,7 +482,7 @@ export function AddSubscriptionScreen({ navigation }: any) {
         </Card>
 
         {showPreview && serviceName && (
-          <Card className="mb-4 bg-teal-50 border border-teal-200">
+          <Card className="mb-4 bg-blue-50 border border-blue-200">
             <Text className="font-semibold text-gray-900 mb-2">✓ Detected:</Text>
             <Text className="text-sm text-gray-700">Service: {serviceName}</Text>
             <Text className="text-sm text-gray-700">Amount: {currency} {monthlyCost}</Text>
@@ -554,9 +554,9 @@ export function AddSubscriptionScreen({ navigation }: any) {
                             setShowIconPicker(false);
                           }}
                           className={`w-14 h-14 rounded-full items-center justify-center ${
-                            isSelected ? 'bg-[#4FD1C5]' : 'bg-white'
+                            isSelected ? 'bg-[#3B82F6]' : 'bg-white'
                           }`}
-                          style={{ borderWidth: 1, borderColor: isSelected ? '#4FD1C5' : '#E5E7EB' }}
+                          style={{ borderWidth: 1, borderColor: isSelected ? '#3B82F6' : '#E5E7EB' }}
                         >
                           <IconComponent 
                             name={icon.name as any} 
@@ -590,7 +590,7 @@ export function AddSubscriptionScreen({ navigation }: any) {
                 <Switch
                   value={isTrial}
                   onValueChange={setIsTrial}
-                  trackColor={{ true: '#4FD1C5', false: '#d1d5db' }}
+                  trackColor={{ true: '#3B82F6', false: '#d1d5db' }}
                 />
               </View>
 

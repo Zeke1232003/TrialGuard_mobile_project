@@ -5,12 +5,12 @@
 
 export const colors = {
   // Primary brand colors
-  primary: '#36D9B8', // Teal/Turquoise
-  primaryDark: '#2AB89A',
-  primaryLight: '#A8F0E0',
+  primary: '#3B82F6', // Blue
+  primaryDark: '#2563EB',
+  primaryLight: '#BFDBFE',
   
   // Semantic colors
-  success: '#36D9B8',
+  success: '#3B82F6',
   warning: '#FF9966',
   danger: '#EF4444',
   info: '#3B82F6',

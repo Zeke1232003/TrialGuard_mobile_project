@@ -94,17 +94,17 @@ export function CalendarScreen({ navigation }: any) {
         <View key={day} style={{ width: calendarCellSize, height: calendarCellSize, padding: 2 }}>
           <View
             className={`flex-1 items-center justify-center rounded-lg ${
-              isToday ? 'bg-teal-100 border-2 border-[#4FD1C5]' : ''
+              isToday ? 'bg-blue-100 border-2 border-[#3B82F6]' : ''
             } ${hasBills ? 'bg-blue-50' : ''}`}
           >
             <Text
-              className={isToday ? 'font-bold text-[#4FD1C5]' : 'text-gray-900'}
+              className={isToday ? 'font-bold text-[#3B82F6]' : 'text-gray-900'}
               style={{ fontSize: dayNumberFontSize }}
             >
               {day}
             </Text>
             {hasBills && (
-              <View className="w-1.5 h-1.5 bg-[#4FD1C5] rounded-full mt-1" />
+              <View className="w-1.5 h-1.5 bg-[#3B82F6] rounded-full mt-1" />
             )}
             {billCount > 0 && (
               <Text className="text-gray-600 mt-0.5" style={{ fontSize: width < 360 ? 10 : 12 }}>

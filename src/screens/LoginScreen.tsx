@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { Button, Input } from '../components/ui';
 import { useAuthStore } from '../store/authStore';
+import { BrandMark } from '../components/BrandMark';
 
 export function LoginScreen({ navigation }: any) {
   const { login } = useAuthStore();
@@ -33,13 +34,13 @@ export function LoginScreen({ navigation }: any) {
       className="flex-1"
     >
       <ScrollView
-        className="flex-1 bg-gradient-to-br from-teal-50 to-cyan-100"
+        className="flex-1 bg-gradient-to-br from-blue-50 to-sky-100"
         contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 16 }}
       >
         <View className="w-full max-w-sm mx-auto">
           <View className="items-center mb-8">
-            <View className="w-16 h-16 bg-[#4FD1C5] rounded-2xl items-center justify-center mb-4 shadow-lg">
-              <Text className="text-white text-3xl">🛡️</Text>
+            <View className="w-16 h-16 rounded-2xl overflow-hidden mb-4 shadow-lg">
+              <BrandMark fill />
             </View>
             <Text className="text-3xl font-bold text-gray-900">TrialGuard</Text>
             <Text className="text-gray-600 mt-2 text-sm">Never forget subscriptions</Text>
@@ -85,7 +86,7 @@ export function LoginScreen({ navigation }: any) {
             <View className="mt-4 items-center">
               <Text
                 onPress={() => navigation.navigate('Register')}
-                className="text-sm text-[#4FD1C5] font-medium"
+                className="text-sm text-[#3B82F6] font-medium"
               >
                 Don't have an account? Sign up
               </Text>

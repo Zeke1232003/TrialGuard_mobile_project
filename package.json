@@ -7,7 +7,7 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "build:web": "expo export --platform web",
+    "build:web": "expo export --platform web && node ./scripts/copy-static-pages.js",
     "backend:dev": "npm --prefix backend run dev",
     "backend:start": "npm --prefix backend run start"
   },

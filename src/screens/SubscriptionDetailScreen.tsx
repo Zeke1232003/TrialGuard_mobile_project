@@ -116,7 +116,7 @@ export function SubscriptionDetailScreen({ navigation, route }: any) {
         <IconComponent 
           name={subscription.iconName as any} 
           size={40} 
-          color={subscription.iconColor || '#4FD1C5'} 
+          color={subscription.iconColor || '#3B82F6'} 
         />
       </View>
     );
@@ -146,7 +146,7 @@ export function SubscriptionDetailScreen({ navigation, route }: any) {
           </View>
 
           <View className="border-t border-gray-200 pt-4">
-            <Text className="text-4xl font-bold text-[#4FD1C5] mb-1">
+            <Text className="text-4xl font-bold text-[#3B82F6] mb-1">
               {currencySymbol}{subscription.cost}
             </Text>
             <Text className="text-sm text-gray-600 capitalize">

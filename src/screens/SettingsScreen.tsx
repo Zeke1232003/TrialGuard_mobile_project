@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Switch, TouchableOpacity, Alert, Platform } from 'react-native';
+import { View, Text, ScrollView, Switch, TouchableOpacity, Alert, Platform, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Card, Button } from '../components/ui';
 import { useAuthStore } from '../store/authStore';
@@ -8,6 +8,8 @@ import { useSubscriptionStore } from '../store/subscriptionStore';
 import { scheduleTestNotificationAsync } from '../services/notificationService';
 import { deleteAllCurrentUserDataFromFirestore } from '../services/firestoreClient';
 import { deleteCurrentUserAuth } from '../services/authClient';
+
+const PRIVACY_POLICY_URL = 'https://trialguard-91f62.web.app/privacy-policy.html';
 
 const reminderTimeOptions = [
   { label: '08:00 AM', hour: 8, minute: 0 },
@@ -142,6 +144,24 @@ export function SettingsScreen({ navigation }: any) {
     );
   };
 
+  const openExternalLink = async (url: string, label: string) => {
+    try {
+      if (Platform.OS === 'web') {
+        globalThis.open(url, '_blank', 'noopener,noreferrer');
+        return;
+      }
+
+      const supported = await Linking.canOpenURL(url);
+      if (!supported) {
+        Alert.alert('Cannot Open Link', `${label} URL is not available right now.`);
+        return;
+      }
+      await Linking.openURL(url);
+    } catch {
+      Alert.alert('Cannot Open Link', `Unable to open ${label}.`);
+    }
+  };
+
   const handleToggleDailySummary = (enabled: boolean) => {
     setDailySummaryEnabled(enabled);
     syncSummaryNotification(subscriptions);
@@ -212,7 +232,7 @@ export function SettingsScreen({ navigation }: any) {
         {/* Profile Section */}
         <Card className="mb-6">
           <View className="items-center py-4">
-            <View className="w-20 h-20 bg-[#4FD1C5] rounded-full items-center justify-center mb-3">
+            <View className="w-20 h-20 bg-[#3B82F6] rounded-full items-center justify-center mb-3">
               <Text className="text-white text-3xl font-bold">
                 {displayName.charAt(0)}
               </Text>
@@ -249,9 +269,9 @@ export function SettingsScreen({ navigation }: any) {
                     setCurrency('THB');
                     setShowCurrencyPicker(false);
                   }}
-                  className={`py-3 px-4 ${currency === 'THB' ? 'bg-teal-50' : ''}`}
+                  className={`py-3 px-4 ${currency === 'THB' ? 'bg-blue-50' : ''}`}
                 >
-                  <Text className={`${currency === 'THB' ? 'text-[#4FD1C5] font-semibold' : 'text-gray-700'}`}>
+                  <Text className={`${currency === 'THB' ? 'text-[#3B82F6] font-semibold' : 'text-gray-700'}`}>
                     Thai Baht (฿)
                   </Text>
                 </TouchableOpacity>
@@ -260,9 +280,9 @@ export function SettingsScreen({ navigation }: any) {
                     setCurrency('USD');
                     setShowCurrencyPicker(false);
                   }}
-                  className={`py-3 px-4 ${currency === 'USD' ? 'bg-teal-50' : ''}`}
+                  className={`py-3 px-4 ${currency === 'USD' ? 'bg-blue-50' : ''}`}
                 >
-                  <Text className={`${currency === 'USD' ? 'text-[#4FD1C5] font-semibold' : 'text-gray-700'}`}>
+                  <Text className={`${currency === 'USD' ? 'text-[#3B82F6] font-semibold' : 'text-gray-700'}`}>
                     US Dollar ($)
                   </Text>
                 </TouchableOpacity>
@@ -280,7 +300,7 @@ export function SettingsScreen({ navigation }: any) {
               <Switch
                 value={darkMode}
                 onValueChange={setDarkMode}
-                trackColor={{ true: '#4FD1C5', false: '#d1d5db' }}
+                trackColor={{ true: '#3B82F6', false: '#d1d5db' }}
               />
             </View>
 
@@ -295,7 +315,7 @@ export function SettingsScreen({ navigation }: any) {
               <Switch
                 value={dailySummaryEnabled}
                 onValueChange={handleToggleDailySummary}
-                trackColor={{ true: '#4FD1C5', false: '#d1d5db' }}
+                trackColor={{ true: '#3B82F6', false: '#d1d5db' }}
               />
             </View>
 
@@ -310,7 +330,7 @@ export function SettingsScreen({ navigation }: any) {
               <Switch
                 value={alarmModeEnabled}
                 onValueChange={handleToggleAlarmMode}
-                trackColor={{ true: '#4FD1C5', false: '#d1d5db' }}
+                trackColor={{ true: '#3B82F6', false: '#d1d5db' }}
               />
             </View>
 
@@ -336,9 +356,9 @@ export function SettingsScreen({ navigation }: any) {
                     <TouchableOpacity
                       key={option.label}
                       onPress={() => handleSelectReminderTime(option.hour, option.minute)}
-                      className={`py-3 px-4 ${selected ? 'bg-teal-50' : ''}`}
+                      className={`py-3 px-4 ${selected ? 'bg-blue-50' : ''}`}
                     >
-                      <Text className={`${selected ? 'text-[#4FD1C5] font-semibold' : 'text-gray-700'}`}>
+                      <Text className={`${selected ? 'text-[#3B82F6] font-semibold' : 'text-gray-700'}`}>
                         {option.label}
                       </Text>
                     </TouchableOpacity>
@@ -359,7 +379,12 @@ export function SettingsScreen({ navigation }: any) {
               <Text className="text-gray-600">1.0.0</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity className="flex-row items-center justify-between py-3 border-b border-gray-100">
+            <TouchableOpacity
+              onPress={() => {
+                void openExternalLink(PRIVACY_POLICY_URL, 'Privacy Policy');
+              }}
+              className="flex-row items-center justify-between py-3 border-b border-gray-100"
+            >
               <Text className="text-gray-900">Privacy Policy</Text>
               <Text className="text-gray-400">→</Text>
             </TouchableOpacity>

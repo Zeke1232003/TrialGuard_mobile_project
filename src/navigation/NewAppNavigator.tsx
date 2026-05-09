@@ -61,7 +61,7 @@ function AppTabsNavigator() {
       <AppTabs.Navigator
         screenOptions={({ route }: { route: { name: keyof AppTabsParamList } }) => ({
           headerShown: false,
-          tabBarActiveTintColor: '#4FD1C5',
+          tabBarActiveTintColor: '#3B82F6',
           tabBarInactiveTintColor: '#9CA3AF',
           tabBarStyle: {
             height: 64 + insets.bottom,
@@ -100,7 +100,7 @@ function AppTabsNavigator() {
           width: 56,
           height: 56,
           borderRadius: 28,
-          backgroundColor: '#4FD1C5',
+          backgroundColor: '#3B82F6',
           alignItems: 'center',
           justifyContent: 'center',
           elevation: 8,

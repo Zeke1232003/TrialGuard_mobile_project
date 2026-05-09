@@ -23,9 +23,9 @@ export function Button({
   const baseClasses = 'items-center justify-center rounded-xl';
   
   const variantClasses = {
-    primary: 'bg-[#4FD1C5]',
+    primary: 'bg-[#3B82F6]',
     secondary: 'bg-gray-200',
-    outline: 'border-2 border-[#4FD1C5] bg-transparent',
+    outline: 'border-2 border-[#3B82F6] bg-transparent',
     ghost: 'bg-transparent',
   };
   
@@ -38,7 +38,7 @@ export function Button({
   const textColorClasses = {
     primary: 'text-white',
     secondary: 'text-gray-900',
-    outline: 'text-[#4FD1C5]',
+    outline: 'text-[#3B82F6]',
     ghost: 'text-gray-900',
   };
 
@@ -58,7 +58,7 @@ export function Button({
       activeOpacity={0.7}
     >
       {loading ? (
-        <ActivityIndicator color={variant === 'primary' ? '#ffffff' : '#4FD1C5'} />
+        <ActivityIndicator color={variant === 'primary' ? '#ffffff' : '#3B82F6'} />
       ) : (
         <Text className={`font-medium ${textColorClasses[variant]} ${textSizeClasses[size]}`}>
           {children}
